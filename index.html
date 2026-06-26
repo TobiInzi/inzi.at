@@ -3,9 +3,388 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Under construction</title>
+  <title>tobiinzi</title>
+  <style>
+    :root {
+      --page-bg: #0d090a;
+      --main-color: #e84d36;
+      --main-color-soft: #ff8a6b;
+      --particle-light: #ffd0a6;
+      --intro-glow: rgba(232, 77, 54, 0.13);
+      --trail-fade: rgba(13, 9, 10, 0.23);
+      --text-on-main: #170807;
+      --intro-fade-ms: 900ms;
+      --transition-ms: 920ms;
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: var(--main-color);
+      background: var(--page-bg);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background: var(--page-bg);
+    }
+
+    body.site-open {
+      overflow: auto;
+      background: var(--main-color);
+    }
+
+    .intro {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 46%, var(--intro-glow), transparent 25rem),
+        var(--page-bg);
+      opacity: 0;
+      transition: opacity var(--intro-fade-ms) ease;
+      isolation: isolate;
+    }
+
+    .intro.is-visible {
+      opacity: 1;
+    }
+
+    .intro.is-done {
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .particle-field,
+    .color-wash {
+      position: absolute;
+      inset: 0;
+    }
+
+    .particle-field {
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      z-index: 0;
+    }
+
+    .color-wash {
+      z-index: 1;
+      pointer-events: none;
+      background: var(--main-color);
+      clip-path: circle(0 at 50% 50%);
+      transition: clip-path var(--transition-ms) cubic-bezier(0.78, 0, 0.18, 1);
+    }
+
+    .intro.is-opening .color-wash {
+      clip-path: circle(76vmax at 50% 50%);
+    }
+
+    .main-title {
+      position: relative;
+      z-index: 2;
+      min-width: min(78vw, 35rem);
+      min-height: clamp(5.5rem, 16vw, 10.5rem);
+      border: 0;
+      padding: 0;
+      appearance: none;
+      color: var(--main-color);
+      background: transparent;
+      font-family: inherit;
+      font-size: clamp(4.3rem, 16vw, 10rem);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: 0;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(0.7rem) scale(0.92);
+      transition:
+        color 260ms ease,
+        opacity 560ms ease,
+        transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow:
+        0 0 1.5rem rgba(232, 77, 54, 0.42),
+        0 0 4.5rem rgba(255, 138, 107, 0.2);
+    }
+
+    .main-title.is-ready {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .intro.is-opening .main-title {
+      color: var(--text-on-main);
+      transform: scale(9);
+      opacity: 0;
+      transition:
+        color 180ms ease,
+        opacity 360ms ease 160ms,
+        transform var(--transition-ms) cubic-bezier(0.7, 0, 0.24, 1);
+    }
+
+    .home {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      color: var(--text-on-main);
+      background: var(--main-color);
+      opacity: 0;
+      transition: opacity 520ms ease;
+    }
+
+    body.site-open .home {
+      opacity: 1;
+    }
+
+    .home h1 {
+      margin: 0;
+      font-size: clamp(3rem, 12vw, 9rem);
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+  </style>
 </head>
 <body>
-  under construction
+  <div class="intro" id="intro" aria-hidden="false">
+    <canvas class="particle-field" id="particleField"></canvas>
+    <div class="color-wash" aria-hidden="true"></div>
+    <button class="main-title" id="mainTitle" type="button"></button>
+  </div>
+
+  <main class="home" aria-live="polite">
+    <h1>main</h1>
+  </main>
+
+  <script>
+    const INTRO = {
+      mainText: "tobiinzi",
+      particleCount: 78,
+      warmupMs: 1200,
+      gatherMs: 1600,
+      burstMs: 760,
+      maxDevicePixelRatio: 2,
+    };
+
+    const intro = document.querySelector("#intro");
+    const title = document.querySelector("#mainTitle");
+    const canvas = document.querySelector("#particleField");
+    const context = canvas.getContext("2d", { alpha: false });
+    const theme = readTheme();
+
+    const state = {
+      width: 0,
+      height: 0,
+      dpr: 1,
+      particles: [],
+      startedAt: performance.now(),
+      lastTime: performance.now(),
+      ready: false,
+      opening: false,
+    };
+
+    title.textContent = INTRO.mainText;
+
+    function readTheme() {
+      const styles = getComputedStyle(document.documentElement);
+
+      return {
+        pageBg: styles.getPropertyValue("--page-bg").trim(),
+        mainColor: styles.getPropertyValue("--main-color").trim(),
+        mainColorSoft: styles.getPropertyValue("--main-color-soft").trim(),
+        particleLight: styles.getPropertyValue("--particle-light").trim(),
+        trailFade: styles.getPropertyValue("--trail-fade").trim(),
+      };
+    }
+
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    function chooseEdgePosition() {
+      const edge = Math.floor(Math.random() * 4);
+      const padding = 24;
+
+      if (edge === 0) {
+        return { x: randomBetween(0, state.width), y: -padding };
+      }
+
+      if (edge === 1) {
+        return { x: state.width + padding, y: randomBetween(0, state.height) };
+      }
+
+      if (edge === 2) {
+        return { x: randomBetween(0, state.width), y: state.height + padding };
+      }
+
+      return { x: -padding, y: randomBetween(0, state.height) };
+    }
+
+    function makeParticle(index) {
+      const position = chooseEdgePosition();
+      const hueShift = index % 3;
+
+      return {
+        x: position.x,
+        y: position.y,
+        vx: randomBetween(-12, 12),
+        vy: randomBetween(-12, 12),
+        seed: randomBetween(0, Math.PI * 2),
+        size: randomBetween(2, 4),
+        color:
+          hueShift === 0
+            ? theme.mainColor
+            : hueShift === 1
+              ? theme.mainColorSoft
+              : theme.particleLight,
+        burstSpeed: randomBetween(150, 330),
+        burstAngle: randomBetween(0, Math.PI * 2),
+      };
+    }
+
+    function resizeCanvas() {
+      state.width = window.innerWidth;
+      state.height = window.innerHeight;
+      state.dpr = Math.min(window.devicePixelRatio || 1, INTRO.maxDevicePixelRatio);
+
+      canvas.width = Math.floor(state.width * state.dpr);
+      canvas.height = Math.floor(state.height * state.dpr);
+      canvas.style.width = `${state.width}px`;
+      canvas.style.height = `${state.height}px`;
+
+      context.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+      context.fillStyle = theme.pageBg;
+      context.fillRect(0, 0, state.width, state.height);
+    }
+
+    function resetParticles() {
+      const count = Math.min(INTRO.particleCount, Math.max(42, Math.floor(state.width / 17)));
+      state.particles = Array.from({ length: count }, (_, index) => makeParticle(index));
+    }
+
+    function drawParticle(particle) {
+      const pixel = Math.max(2, Math.round(particle.size));
+
+      context.fillStyle = particle.color;
+      context.fillRect(
+        Math.round(particle.x - pixel / 2),
+        Math.round(particle.y - pixel / 2),
+        pixel,
+        pixel
+      );
+    }
+
+    function updateParticle(particle, elapsed, delta) {
+      const centerX = state.width / 2;
+      const centerY = state.height / 2;
+      const gatherStart = INTRO.warmupMs;
+      const burstStart = INTRO.warmupMs + INTRO.gatherMs;
+      const drift = Math.sin(elapsed * 0.003 + particle.seed) * 18;
+
+      if (elapsed < gatherStart) {
+        particle.x += (particle.vx + drift) * delta;
+        particle.y += (particle.vy + Math.cos(elapsed * 0.002 + particle.seed) * 16) * delta;
+        return;
+      }
+
+      if (elapsed < burstStart) {
+        const progress = (elapsed - gatherStart) / INTRO.gatherMs;
+        const pull = 4.8 + progress * 12;
+        const orbit = (1 - progress) * 120;
+        const targetX = centerX + Math.cos(particle.seed + progress * 7) * orbit;
+        const targetY = centerY + Math.sin(particle.seed + progress * 6) * orbit;
+
+        particle.vx += (targetX - particle.x) * pull * delta;
+        particle.vy += (targetY - particle.y) * pull * delta;
+        particle.vx *= 0.88;
+        particle.vy *= 0.88;
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
+        return;
+      }
+
+      const burstProgress = Math.min((elapsed - burstStart) / INTRO.burstMs, 1);
+      const easeOut = 1 - (1 - burstProgress) ** 3;
+      const speed = particle.burstSpeed * (1 - burstProgress * 0.52);
+
+      particle.x = centerX + Math.cos(particle.burstAngle) * speed * easeOut * 1.7;
+      particle.y = centerY + Math.sin(particle.burstAngle) * speed * easeOut * 1.7;
+      particle.size = Math.max(1, particle.size * 0.992);
+    }
+
+    function revealTitle() {
+      if (state.ready) {
+        return;
+      }
+
+      state.ready = true;
+      title.classList.add("is-ready");
+    }
+
+    function animate(now) {
+      if (state.opening) {
+        return;
+      }
+
+      const delta = Math.min((now - state.lastTime) / 1000, 0.033);
+      const elapsed = now - state.startedAt;
+      state.lastTime = now;
+
+      context.fillStyle = theme.trailFade;
+      context.fillRect(0, 0, state.width, state.height);
+
+      for (const particle of state.particles) {
+        updateParticle(particle, elapsed, delta);
+        drawParticle(particle);
+      }
+
+      if (elapsed > INTRO.warmupMs + INTRO.gatherMs + INTRO.burstMs * 0.58) {
+        revealTitle();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function openHome() {
+      if (state.opening || !state.ready) {
+        return;
+      }
+
+      state.opening = true;
+      intro.classList.add("is-opening");
+
+      window.setTimeout(() => {
+        document.body.classList.add("site-open");
+        intro.classList.add("is-done");
+        intro.setAttribute("aria-hidden", "true");
+      }, 840);
+    }
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      resetParticles();
+    });
+
+    title.addEventListener("click", openHome);
+
+    resizeCanvas();
+    resetParticles();
+
+    requestAnimationFrame(() => {
+      intro.classList.add("is-visible");
+      requestAnimationFrame(animate);
+    });
+  </script>
 </body>
 </html>
