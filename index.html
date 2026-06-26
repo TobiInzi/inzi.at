@@ -4,14 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>tobiinzi</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --page-bg: #0d090a;
       --main-color: #e84d36;
-      --main-color-soft: #ff8a6b;
-      --particle-light: #ffd0a6;
-      --intro-glow: rgba(232, 77, 54, 0.13);
-      --trail-fade: rgba(13, 9, 10, 0.23);
       --text-on-main: #170807;
       --intro-fade-ms: 900ms;
       --transition-ms: 920ms;
@@ -48,10 +45,9 @@
       display: grid;
       place-items: center;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 50% 46%, var(--intro-glow), transparent 25rem),
-        var(--page-bg);
+      background: var(--page-bg);
       opacity: 0;
+      z-index: 10;
       transition: opacity var(--intro-fade-ms) ease;
       isolation: isolate;
     }
@@ -60,13 +56,18 @@
       opacity: 1;
     }
 
+    .intro.is-ready {
+      cursor: pointer;
+    }
+
     .intro.is-done {
       pointer-events: none;
       visibility: hidden;
     }
 
     .particle-field,
-    .color-wash {
+    .color-wash,
+    .intro-hit-target {
       position: absolute;
       inset: 0;
     }
@@ -76,18 +77,46 @@
       height: 100%;
       image-rendering: pixelated;
       z-index: 0;
+      pointer-events: none;
+      transition: opacity 380ms ease;
+    }
+
+    .intro.is-ready .particle-field {
+      opacity: 0;
     }
 
     .color-wash {
       z-index: 1;
       pointer-events: none;
       background: var(--main-color);
-      clip-path: circle(0 at 50% 50%);
-      transition: clip-path var(--transition-ms) cubic-bezier(0.78, 0, 0.18, 1);
+      opacity: 0;
+      transition: opacity 180ms ease 560ms;
     }
 
     .intro.is-opening .color-wash {
-      clip-path: circle(76vmax at 50% 50%);
+      opacity: 1;
+    }
+
+    .intro-hit-target {
+      z-index: 3;
+      display: none;
+      border: 0;
+      padding: 0;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .intro.is-ready .intro-hit-target {
+      display: block;
+    }
+
+    .intro.is-opening .intro-hit-target {
+      display: none;
+    }
+
+    .intro-hit-target:focus {
+      outline: none;
     }
 
     .main-title {
@@ -106,30 +135,34 @@
       line-height: 0.9;
       letter-spacing: 0;
       text-align: center;
-      cursor: pointer;
+      cursor: inherit;
       opacity: 0;
+      clip-path: inset(0 50% 0 50%);
       transform: translateY(0.7rem) scale(0.92);
       transition:
         color 260ms ease,
-        opacity 560ms ease,
+        clip-path 300ms cubic-bezier(0.16, 1, 0.3, 1),
+        opacity 70ms ease,
         transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
-      text-shadow:
-        0 0 1.5rem rgba(232, 77, 54, 0.42),
-        0 0 4.5rem rgba(255, 138, 107, 0.2);
     }
 
+    .main-title.is-revealing,
     .main-title.is-ready {
       opacity: 1;
+      clip-path: inset(0 0 0 0);
       transform: translateY(0) scale(1);
     }
 
+    .main-title:focus {
+      outline: none;
+    }
+
     .intro.is-opening .main-title {
-      color: var(--text-on-main);
-      transform: scale(9);
-      opacity: 0;
+      color: var(--main-color);
+      transform: scale(18);
+      opacity: 1;
       transition:
-        color 180ms ease,
-        opacity 360ms ease 160ms,
+        opacity 120ms ease var(--transition-ms),
         transform var(--transition-ms) cubic-bezier(0.7, 0, 0.24, 1);
     }
 
@@ -161,6 +194,7 @@
     <canvas class="particle-field" id="particleField"></canvas>
     <div class="color-wash" aria-hidden="true"></div>
     <button class="main-title" id="mainTitle" type="button"></button>
+    <button class="intro-hit-target" id="introHitTarget" type="button" aria-label="Open site"></button>
   </div>
 
   <main class="home" aria-live="polite">
@@ -170,15 +204,19 @@
   <script>
     const INTRO = {
       mainText: "tobiinzi",
-      particleCount: 78,
-      warmupMs: 1200,
-      gatherMs: 1600,
-      burstMs: 760,
+      particleCount: 20,
+      warmupMs: 2600,
+      gatherMs: 2300,
+      collideMs: 1450,
+      explodeMs: 650,
+      trailMs: 850,
+      trailEveryMs: 250,
       maxDevicePixelRatio: 2,
     };
 
     const intro = document.querySelector("#intro");
     const title = document.querySelector("#mainTitle");
+    const hitTarget = document.querySelector("#introHitTarget");
     const canvas = document.querySelector("#particleField");
     const context = canvas.getContext("2d", { alpha: false });
     const theme = readTheme();
@@ -190,7 +228,9 @@
       particles: [],
       startedAt: performance.now(),
       lastTime: performance.now(),
+      revealing: false,
       ready: false,
+      settled: false,
       opening: false,
     };
 
@@ -202,9 +242,6 @@
       return {
         pageBg: styles.getPropertyValue("--page-bg").trim(),
         mainColor: styles.getPropertyValue("--main-color").trim(),
-        mainColorSoft: styles.getPropertyValue("--main-color-soft").trim(),
-        particleLight: styles.getPropertyValue("--particle-light").trim(),
-        trailFade: styles.getPropertyValue("--trail-fade").trim(),
       };
     }
 
@@ -212,44 +249,45 @@
       return min + Math.random() * (max - min);
     }
 
-    function chooseEdgePosition() {
-      const edge = Math.floor(Math.random() * 4);
-      const padding = 24;
-
-      if (edge === 0) {
-        return { x: randomBetween(0, state.width), y: -padding };
-      }
-
-      if (edge === 1) {
-        return { x: state.width + padding, y: randomBetween(0, state.height) };
-      }
-
-      if (edge === 2) {
-        return { x: randomBetween(0, state.width), y: state.height + padding };
-      }
-
-      return { x: -padding, y: randomBetween(0, state.height) };
+    function easeInOutCubic(progress) {
+      return progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - ((-2 * progress + 2) ** 3) / 2;
     }
 
-    function makeParticle(index) {
-      const position = chooseEdgePosition();
-      const hueShift = index % 3;
+    function easeInOutSine(progress) {
+      return -(Math.cos(Math.PI * progress) - 1) / 2;
+    }
+
+    function chooseStartPosition() {
+      return {
+        x: randomBetween(0, state.width),
+        y: randomBetween(0, state.height),
+      };
+    }
+
+    function makeParticle() {
+      const position = chooseStartPosition();
+      const angle = randomBetween(0, Math.PI * 2);
+      const speed = randomBetween(32, 68);
 
       return {
         x: position.x,
         y: position.y,
-        vx: randomBetween(-12, 12),
-        vy: randomBetween(-12, 12),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
         seed: randomBetween(0, Math.PI * 2),
-        size: randomBetween(2, 4),
-        color:
-          hueShift === 0
-            ? theme.mainColor
-            : hueShift === 1
-              ? theme.mainColorSoft
-              : theme.particleLight,
-        burstSpeed: randomBetween(150, 330),
-        burstAngle: randomBetween(0, Math.PI * 2),
+        size: randomBetween(3, 5),
+        color: theme.mainColor,
+        chaos: randomBetween(0.7, 1.35),
+        magneticSpin: Math.random() < 0.5 ? -1 : 1,
+        nucleusRadius: randomBetween(24, 70),
+        nucleusAngle: randomBetween(0, Math.PI * 2),
+        nucleusSpeed: randomBetween(4.8, 9.5),
+        wobble: randomBetween(12, 35),
+        exploded: false,
+        trail: [],
+        lastTrailAt: 0,
       };
     }
 
@@ -268,59 +306,177 @@
       context.fillRect(0, 0, state.width, state.height);
     }
 
-    function resetParticles() {
-      const count = Math.min(INTRO.particleCount, Math.max(42, Math.floor(state.width / 17)));
-      state.particles = Array.from({ length: count }, (_, index) => makeParticle(index));
+    function clearParticleField() {
+      context.fillStyle = theme.pageBg;
+      context.fillRect(0, 0, state.width, state.height);
     }
 
-    function drawParticle(particle) {
-      const pixel = Math.max(2, Math.round(particle.size));
+    function resetParticles() {
+      const count = Math.min(INTRO.particleCount, Math.max(10, Math.floor(state.width / 82)));
+      state.particles = Array.from({ length: count }, makeParticle);
+    }
 
+    function drawPixelDiamond(x, y, size) {
+      const pixel = Math.max(2, Math.round(size));
+      const left = Math.round(x - pixel / 2);
+      const top = Math.round(y - pixel / 2);
+
+      context.fillRect(left, top - pixel, pixel, pixel);
+      context.fillRect(left - pixel, top, pixel, pixel);
+      context.fillRect(left, top, pixel, pixel);
+      context.fillRect(left + pixel, top, pixel, pixel);
+      context.fillRect(left, top + pixel, pixel, pixel);
+    }
+
+    function rememberTrail(particle, now) {
+      if (now - particle.lastTrailAt < INTRO.trailEveryMs) {
+        return;
+      }
+
+      particle.lastTrailAt = now;
+      particle.trail.push({
+        x: particle.x,
+        y: particle.y,
+        size: particle.size * 0.72,
+        createdAt: now,
+      });
+    }
+
+    function drawParticleTrail(particle, now) {
       context.fillStyle = particle.color;
-      context.fillRect(
-        Math.round(particle.x - pixel / 2),
-        Math.round(particle.y - pixel / 2),
-        pixel,
-        pixel
-      );
+      particle.trail = particle.trail.filter((trailPoint) => {
+        const age = now - trailPoint.createdAt;
+
+        if (age > INTRO.trailMs) {
+          return false;
+        }
+
+        context.globalAlpha = (1 - age / INTRO.trailMs) * 0.26;
+        drawPixelDiamond(trailPoint.x, trailPoint.y, trailPoint.size);
+        return true;
+      });
+
+      context.globalAlpha = 1;
+    }
+
+    function drawParticle(particle, elapsed) {
+      const blink = 0.75 + Math.sin(elapsed * 0.008 + particle.seed) * 0.25;
+
+      context.globalAlpha = blink;
+      context.fillStyle = particle.color;
+      drawPixelDiamond(particle.x, particle.y, particle.size);
+      context.globalAlpha = 1;
     }
 
     function updateParticle(particle, elapsed, delta) {
       const centerX = state.width / 2;
       const centerY = state.height / 2;
       const gatherStart = INTRO.warmupMs;
-      const burstStart = INTRO.warmupMs + INTRO.gatherMs;
-      const drift = Math.sin(elapsed * 0.003 + particle.seed) * 18;
+      const collideStart = INTRO.warmupMs + INTRO.gatherMs;
+      const explodeStart = collideStart + INTRO.collideMs;
+      const driftX = Math.sin(elapsed * 0.0022 + particle.seed) * 14;
+      const driftY = Math.cos(elapsed * 0.0019 + particle.seed) * 12;
 
       if (elapsed < gatherStart) {
-        particle.x += (particle.vx + drift) * delta;
-        particle.y += (particle.vy + Math.cos(elapsed * 0.002 + particle.seed) * 16) * delta;
+        const margin = 16;
+
+        particle.x += (particle.vx + driftX) * delta;
+        particle.y += (particle.vy + driftY) * delta;
+
+        if (particle.x < -margin) particle.x = state.width + margin;
+        if (particle.x > state.width + margin) particle.x = -margin;
+        if (particle.y < -margin) particle.y = state.height + margin;
+        if (particle.y > state.height + margin) particle.y = -margin;
+
         return;
       }
 
-      if (elapsed < burstStart) {
-        const progress = (elapsed - gatherStart) / INTRO.gatherMs;
-        const pull = 4.8 + progress * 12;
-        const orbit = (1 - progress) * 120;
-        const targetX = centerX + Math.cos(particle.seed + progress * 7) * orbit;
-        const targetY = centerY + Math.sin(particle.seed + progress * 6) * orbit;
+      const dx = centerX - particle.x;
+      const dy = centerY - particle.y;
+      const distance = Math.max(Math.hypot(dx, dy), 1);
+      const normalX = dx / distance;
+      const normalY = dy / distance;
+      const tangentX = -normalY * particle.magneticSpin;
+      const tangentY = normalX * particle.magneticSpin;
 
-        particle.vx += (targetX - particle.x) * pull * delta;
-        particle.vy += (targetY - particle.y) * pull * delta;
-        particle.vx *= 0.88;
-        particle.vy *= 0.88;
+      if (elapsed < collideStart) {
+        const progress = (elapsed - gatherStart) / INTRO.gatherMs;
+        const eased = easeInOutSine(progress);
+        const remaining = Math.max((collideStart - elapsed) / 1000, 0.35);
+        const radialSpeed = Math.max(130, ((distance - 30) / remaining) * 1.18);
+        const swirlSpeed =
+          (65 + 90 * (1 - eased) + 45 * Math.sin(progress * Math.PI)) *
+          particle.chaos *
+          (0.75 + Math.sin(elapsed * 0.003 + particle.seed) * 0.25);
+        const desiredVx = normalX * radialSpeed + tangentX * swirlSpeed;
+        const desiredVy = normalY * radialSpeed + tangentY * swirlSpeed;
+        const steer = 2.8 + eased * 4.2;
+
+        particle.vx += (desiredVx - particle.vx) * Math.min(1, steer * delta);
+        particle.vy += (desiredVy - particle.vy) * Math.min(1, steer * delta);
         particle.x += particle.vx * delta;
         particle.y += particle.vy * delta;
         return;
       }
 
-      const burstProgress = Math.min((elapsed - burstStart) / INTRO.burstMs, 1);
-      const easeOut = 1 - (1 - burstProgress) ** 3;
-      const speed = particle.burstSpeed * (1 - burstProgress * 0.52);
+      if (elapsed >= explodeStart) {
+        if (!particle.exploded) {
+          const outwardAngle =
+            Math.atan2(particle.y - centerY, particle.x - centerX) +
+            randomBetween(-0.55, 0.55);
+          const explodeSpeed = randomBetween(650, 1080) * particle.chaos;
 
-      particle.x = centerX + Math.cos(particle.burstAngle) * speed * easeOut * 1.7;
-      particle.y = centerY + Math.sin(particle.burstAngle) * speed * easeOut * 1.7;
-      particle.size = Math.max(1, particle.size * 0.992);
+          particle.vx = Math.cos(outwardAngle) * explodeSpeed;
+          particle.vy = Math.sin(outwardAngle) * explodeSpeed;
+          particle.exploded = true;
+        }
+
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
+        return;
+      }
+
+      const collideProgress = Math.min((elapsed - collideStart) / INTRO.collideMs, 1);
+      const eased = easeInOutCubic(collideProgress);
+      const acceleration = easeInOutSine(collideProgress);
+      const nucleusPull = (180 + acceleration * 860) * particle.chaos;
+      const angularPull =
+        (45 + acceleration * 280 + Math.sin(elapsed * 0.006 + particle.seed) * 90 * acceleration) *
+        particle.chaos;
+      const targetAngle =
+        particle.nucleusAngle +
+        collideProgress * particle.nucleusSpeed * particle.magneticSpin +
+        Math.sin(collideProgress * 18 + particle.seed) * 0.9;
+      const radius =
+        particle.nucleusRadius * (1 - eased * 0.45) +
+        Math.sin(collideProgress * 24 + particle.seed) * particle.wobble * (1 - eased * 0.25);
+      const targetX = centerX + Math.cos(targetAngle) * radius;
+      const targetY = centerY + Math.sin(targetAngle) * radius;
+      const targetDx = targetX - particle.x;
+      const targetDy = targetY - particle.y;
+      const targetDistance = Math.max(Math.hypot(targetDx, targetDy), 1);
+      const targetNormalX = targetDx / targetDistance;
+      const targetNormalY = targetDy / targetDistance;
+      const targetTangentX = -targetNormalY * particle.magneticSpin;
+      const targetTangentY = targetNormalX * particle.magneticSpin;
+      const targetSpeed = Math.min(targetDistance * (8 + acceleration * 16), nucleusPull * 1.7);
+      const desiredVx = targetNormalX * targetSpeed + targetTangentX * angularPull;
+      const desiredVy = targetNormalY * targetSpeed + targetTangentY * angularPull;
+      const steer = 3.2 + acceleration * 8.8;
+
+      particle.vx += (desiredVx - particle.vx) * Math.min(1, steer * delta);
+      particle.vy += (desiredVy - particle.vy) * Math.min(1, steer * delta);
+      particle.x += particle.vx * delta;
+      particle.y += particle.vy * delta;
+    }
+
+    function beginTitleReveal() {
+      if (state.revealing) {
+        return;
+      }
+
+      state.revealing = true;
+      title.classList.add("is-revealing");
     }
 
     function revealTitle() {
@@ -329,6 +485,9 @@
       }
 
       state.ready = true;
+      state.settled = true;
+      clearParticleField();
+      intro.classList.add("is-ready");
       title.classList.add("is-ready");
     }
 
@@ -340,17 +499,28 @@
       const delta = Math.min((now - state.lastTime) / 1000, 0.033);
       const elapsed = now - state.startedAt;
       state.lastTime = now;
+      const explodeStart = INTRO.warmupMs + INTRO.gatherMs + INTRO.collideMs;
 
-      context.fillStyle = theme.trailFade;
+      context.fillStyle = theme.pageBg;
       context.fillRect(0, 0, state.width, state.height);
 
       for (const particle of state.particles) {
         updateParticle(particle, elapsed, delta);
-        drawParticle(particle);
+        rememberTrail(particle, now);
+        drawParticleTrail(particle, now);
+        drawParticle(particle, elapsed);
       }
 
-      if (elapsed > INTRO.warmupMs + INTRO.gatherMs + INTRO.burstMs * 0.58) {
+      if (elapsed > explodeStart) {
+        beginTitleReveal();
+      }
+
+      if (elapsed > INTRO.warmupMs + INTRO.gatherMs + INTRO.collideMs + INTRO.explodeMs) {
         revealTitle();
+      }
+
+      if (state.settled) {
+        return;
       }
 
       requestAnimationFrame(animate);
@@ -362,6 +532,7 @@
       }
 
       state.opening = true;
+      clearParticleField();
       intro.classList.add("is-opening");
 
       window.setTimeout(() => {
@@ -377,6 +548,10 @@
     });
 
     title.addEventListener("click", openHome);
+    hitTarget.addEventListener("click", openHome);
+    hitTarget.addEventListener("pointerdown", openHome);
+    hitTarget.addEventListener("mousedown", openHome);
+    hitTarget.addEventListener("touchstart", openHome);
 
     resizeCanvas();
     resetParticles();
