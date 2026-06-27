@@ -1,0 +1,212 @@
+body.landing-page {
+  overflow: hidden;
+}
+
+body.site-open {
+  overflow: auto;
+  background: var(--main-color);
+}
+
+body.site-final {
+  background: var(--final-bg);
+}
+
+.intro {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--page-bg);
+  opacity: 0;
+  z-index: 10;
+  transition: opacity var(--intro-fade-ms) ease;
+  isolation: isolate;
+}
+
+.intro.is-visible {
+  opacity: 1;
+}
+
+.intro.is-ready {
+  cursor: pointer;
+}
+
+.intro.is-done {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.particle-field,
+.color-wash,
+.intro-hit-target {
+  position: absolute;
+  inset: 0;
+}
+
+.particle-field {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 380ms ease;
+}
+
+.color-wash {
+  z-index: 1;
+  pointer-events: none;
+  background: var(--main-color);
+  opacity: 0;
+  transition: none;
+}
+
+.intro.is-filled .color-wash {
+  opacity: 1;
+}
+
+.intro.is-filled .main-title {
+  visibility: hidden;
+}
+
+.letter-fill {
+  position: fixed;
+  top: var(--fill-y, 50%);
+  left: var(--fill-x, 50%);
+  z-index: 3;
+  width: 8vmax;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: var(--main-color);
+  transform: translate(-50%, -50%) scale(0);
+  transition:
+    transform var(--circle-fill-ms) cubic-bezier(0.58, 0, 0.22, 1) var(--fill-delay);
+  will-change: transform;
+}
+
+.intro.is-opening .letter-fill {
+  transform: translate(-50%, -50%) scale(16);
+}
+
+.intro-hit-target {
+  z-index: 3;
+  display: none;
+  border: 0;
+  padding: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.intro.is-ready .intro-hit-target {
+  display: block;
+}
+
+.intro.is-opening .intro-hit-target {
+  display: none;
+}
+
+.intro-hit-target:focus {
+  outline: none;
+}
+
+.main-title {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(0.45rem, 1.2vw, 0.7rem);
+  place-content: center;
+  min-width: min(78vw, 24rem);
+  min-height: clamp(3.75rem, 9vw, 5.5rem);
+  border: 0;
+  padding: 0;
+  appearance: none;
+  color: var(--main-color);
+  background: transparent;
+  font-family: inherit;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  cursor: inherit;
+  opacity: 0;
+  clip-path: inset(0 50% 0 50%);
+  transform: translateY(0.7rem) scale(0.92);
+  transition:
+    color 260ms ease,
+    clip-path 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 70ms ease,
+    transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.main-title.is-revealing,
+.main-title.is-ready {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transform: translateY(0) scale(1);
+}
+
+.main-title-text {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: clamp(1.75rem, 4.8vw, 3.4rem);
+  font-weight: 800;
+}
+
+.main-title-subtext {
+  display: block;
+}
+
+.main-title-letter {
+  --letter-x: 0px;
+  --letter-y: 0px;
+  --letter-rotation: 0deg;
+  --letter-scale: 1;
+  --letter-delay: 0ms;
+  --letter-fade-delay: 0ms;
+  display: inline-block;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  transition:
+    opacity 160ms ease var(--letter-fade-delay),
+    transform var(--letter-burst-ms) cubic-bezier(0.18, 1.12, 0.28, 1) var(--letter-delay);
+  will-change: transform;
+}
+
+.main-title-letter.is-space {
+  width: 0.28em;
+}
+
+.main-title-subtext {
+  font-size: clamp(0.78rem, 1.5vw, 1rem);
+  font-weight: 600;
+}
+
+.main-title:focus {
+  outline: none;
+}
+
+.intro.is-opening .main-title {
+  color: var(--main-color);
+  clip-path: none;
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  transition:
+    opacity 120ms ease;
+}
+
+.intro.is-opening .main-title-letter {
+  opacity: 0;
+  transform:
+    translate3d(var(--letter-x), var(--letter-y), 0)
+    rotate(var(--letter-rotation))
+    scale(var(--letter-scale));
+}
+
+.intro.is-opening .main-title-subtext {
+  opacity: 0;
+  transform: translateY(0.3rem);
+  transition:
+    opacity 150ms ease,
+    transform 180ms ease;
+}
