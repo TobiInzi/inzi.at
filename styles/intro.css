@@ -95,10 +95,6 @@ body.site-final {
   display: none;
 }
 
-.intro-hit-target:focus {
-  outline: none;
-}
-
 .main-title {
   position: relative;
   z-index: 2;
@@ -119,19 +115,16 @@ body.site-final {
   cursor: inherit;
   opacity: 0;
   clip-path: inset(0 50% 0 50%);
-  transform: translateY(0.7rem) scale(0.92);
   transition:
     color 260ms ease,
-    clip-path 300ms cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 70ms ease,
-    transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
+    clip-path 460ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 240ms ease;
 }
 
 .main-title.is-revealing,
 .main-title.is-ready {
   opacity: 1;
   clip-path: inset(0 0 0 0);
-  transform: translateY(0) scale(1);
 }
 
 .main-title-text {
@@ -170,8 +163,13 @@ body.site-final {
   font-weight: 600;
 }
 
-.main-title:focus {
+.main-title:focus:not(:focus-visible) {
   outline: none;
+}
+
+.main-title:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
 }
 
 .intro.is-opening .main-title {

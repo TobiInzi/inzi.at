@@ -1,4 +1,5 @@
 import { HOME_SEQUENCE, INTRO, START_PAGES } from "./intro/config.js";
+import { scaleDurations } from "./intro/motion.js";
 import { ParticleField } from "./intro/particle-field.js";
 import { PortfolioSequence } from "./intro/portfolio-sequence.js";
 import { SequenceTimers } from "./intro/sequence-timers.js";
@@ -7,6 +8,7 @@ import { TitleBurst } from "./intro/title-burst.js";
 import { renderTitleText } from "./intro/title.js";
 
 const SELECTORS = {
+  main: "#portfolioMain",
   intro: "#intro",
   title: "#mainTitle",
   titleText: "#mainTitleText",
@@ -23,6 +25,7 @@ const elements = getElements(SELECTORS);
 const timers = new SequenceTimers();
 const startPage = chooseStartPage(START_PAGES);
 
+scaleDurations([INTRO, HOME_SEQUENCE]);
 applyStartPage(startPage);
 renderTitleText(elements.titleText, INTRO.mainText);
 elements.titleSubtext.textContent = INTRO.subText;
@@ -34,6 +37,7 @@ const state = {
   dpr: 1,
   hiddenAt: 0,
   opening: false,
+  resizeFrame: 0,
   pausedAnimations: [],
 };
 
@@ -88,11 +92,11 @@ function getElements(selectors) {
 }
 
 function bindEvents() {
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", scheduleResize);
   document.addEventListener(
     "pointermove",
     (event) => {
-      if (!portfolioSequence.isComplete) {
+      if (!state.opening) {
         particles.handlePointerMove(event);
       }
     },
@@ -109,9 +113,18 @@ function bindEvents() {
 
   elements.title.addEventListener("click", openHome);
   elements.hitTarget.addEventListener("click", openHome);
-  elements.hitTarget.addEventListener("pointerdown", openHome);
-  elements.hitTarget.addEventListener("mousedown", openHome);
-  elements.hitTarget.addEventListener("touchstart", openHome);
+  elements.hitTarget.addEventListener("pointerdown", openHome, { passive: true });
+}
+
+function scheduleResize() {
+  if (state.resizeFrame !== 0) {
+    return;
+  }
+
+  state.resizeFrame = requestAnimationFrame(() => {
+    state.resizeFrame = 0;
+    resize();
+  });
 }
 
 function resize() {
@@ -119,7 +132,7 @@ function resize() {
   state.height = window.innerHeight;
   state.dpr = Math.min(window.devicePixelRatio || 1, INTRO.maxDevicePixelRatio);
   particles.resize(state.width, state.height, state.dpr);
-  titleBurst.resize(state.width, state.height);
+  titleBurst.resize(state.width, state.height, state.dpr);
 }
 
 function openHome() {
@@ -144,7 +157,10 @@ function finishIntro() {
   document.body.classList.add("site-open");
   elements.intro.classList.add("is-done");
   elements.intro.setAttribute("aria-hidden", "true");
+  elements.main.removeAttribute("aria-hidden");
   titleBurst.stop();
+  titleBurst.dispose();
+  particles.dispose();
   portfolioSequence.start();
 }
 

@@ -33,7 +33,7 @@ export class PortfolioSequence {
     this.#timers.set("tipSwap", () => {
       this.#arrivalTip.textContent = "have fun";
       this.#arrivalTip.classList.remove("is-changing");
-    }, 460);
+    }, this.#config.tipSwapMs);
   }
 
   #hideArrivalTip() {

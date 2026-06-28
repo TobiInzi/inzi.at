@@ -1,6 +1,6 @@
 export const INTRO = {
   mainText: "click to start",
-  subText: "or choose another theme",
+  subText: "refresh for another theme",
   particleCount: 20,
   warmupMs: 2600,
   gatherMs: 2300,
@@ -21,6 +21,7 @@ export const HOME_SEQUENCE = {
   letterSwallowDelayMs: 850,
   introExitMs: 1850,
   tipChangeMs: 950,
+  tipSwapMs: 460,
   tipFadeOutMs: 2300,
   dropStartMs: 2700,
   dotShrinkMs: 320,

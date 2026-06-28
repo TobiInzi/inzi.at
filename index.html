@@ -4,10 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>tobiinzi</title>
+  <meta name="description" content="Personal site of Tobi Inzinger — currently under construction.">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles/base.css">
   <link rel="stylesheet" href="styles/portfolio.css">
   <link rel="stylesheet" href="styles/intro.css">
+  <link rel="modulepreload" href="scripts/intro/config.js">
+  <link rel="modulepreload" href="scripts/intro/motion.js">
+  <link rel="modulepreload" href="scripts/intro/canvas.js">
+  <link rel="modulepreload" href="scripts/intro/math.js">
+  <link rel="modulepreload" href="scripts/intro/cursor-effect.js">
+  <link rel="modulepreload" href="scripts/intro/particle-field.js">
+  <link rel="modulepreload" href="scripts/intro/portfolio-sequence.js">
+  <link rel="modulepreload" href="scripts/intro/sequence-timers.js">
+  <link rel="modulepreload" href="scripts/intro/theme.js">
+  <link rel="modulepreload" href="scripts/intro/title-burst.js">
+  <link rel="modulepreload" href="scripts/intro/title.js">
   <script type="module" src="scripts/intro.js"></script>
 </head>
 <body class="landing-page">
@@ -15,22 +27,22 @@
     <canvas class="particle-field" id="particleField"></canvas>
     <canvas class="fill-field" id="letterFillField" aria-hidden="true"></canvas>
     <div class="color-wash" aria-hidden="true"></div>
-    <button class="main-title" id="mainTitle" type="button">
+    <button class="main-title" id="mainTitle" type="button" aria-label="Open site">
       <span class="main-title-text" id="mainTitleText"></span>
       <span class="main-title-subtext" id="mainTitleSubtext"></span>
     </button>
-    <button class="intro-hit-target" id="introHitTarget" type="button" aria-label="Open site"></button>
+    <button class="intro-hit-target" id="introHitTarget" type="button" tabindex="-1" aria-hidden="true"></button>
   </div>
 
-  <main class="portfolio" aria-live="polite">
+  <main class="portfolio" id="portfolioMain" aria-live="polite" aria-hidden="true">
     <div class="arrival-loader">
-      <h1 class="arrival-tip" id="arrivalTip">this is my website</h1>
+      <p class="arrival-tip" id="arrivalTip">this is my website</p>
       <span class="arrival-spinner" aria-hidden="true">
         <span class="arrival-ring"></span>
         <img class="arrival-drop" src="assets/droplet-solid-full.svg" alt="">
       </span>
     </div>
-    <p class="construction-text">This website is under construction</p>
+    <h1 class="construction-text">This website is under construction</h1>
   </main>
 </body>
 </html>

@@ -7,6 +7,7 @@ export class TitleBurst {
   #config;
   #theme;
   #titleText;
+  #disposed = false;
   #state = {
     width: 0,
     height: 0,
@@ -23,11 +24,22 @@ export class TitleBurst {
     this.#titleText = titleText;
   }
 
-  resize(width, height) {
+  resize(width, height, dpr) {
+    if (this.#disposed) {
+      return;
+    }
+
     this.#state.width = width;
     this.#state.height = height;
-    resizeCanvasLayer(this.#canvas, this.#context, width, height, 1);
+    resizeCanvasLayer(this.#canvas, this.#context, width, height, dpr);
     this.clear();
+  }
+
+  dispose() {
+    this.#disposed = true;
+    this.#state.circles = [];
+    this.#canvas.width = 0;
+    this.#canvas.height = 0;
   }
 
   prepare() {

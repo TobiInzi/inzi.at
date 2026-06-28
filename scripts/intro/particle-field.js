@@ -1,6 +1,7 @@
 import { drawPixelDiamond, fillCanvas, resizeCanvasLayer } from "./canvas.js";
 import { CursorEffect } from "./cursor-effect.js";
 import { easeInOutCubic, easeInOutSine, randomBetween } from "./math.js";
+import { prefersReducedMotion } from "./motion.js";
 
 export class ParticleField {
   #canvas;
@@ -11,6 +12,10 @@ export class ParticleField {
   #onReady;
   #cursor;
   #state;
+  #disposed = false;
+  #reduceMotion = false;
+  #maxExplodeTailMs = 0;
+  #exitMargin = 16;
 
   constructor({ canvas, config, theme, onRevealStart, onReady }) {
     this.#canvas = canvas;
@@ -27,9 +32,12 @@ export class ParticleField {
       startedAt: performance.now(),
       lastTime: performance.now(),
       revealing: false,
+      ready: false,
       settled: false,
       opening: false,
     };
+    this.#reduceMotion = prefersReducedMotion();
+    this.#maxExplodeTailMs = this.#config.trailMs + 1600;
     this.#cursor = new CursorEffect({
       context: this.#context,
       config,
@@ -43,16 +51,37 @@ export class ParticleField {
   }
 
   get isReady() {
-    return this.#state.settled;
+    return this.#state.ready;
   }
 
   resize(width, height, dpr) {
+    if (this.#disposed) {
+      return;
+    }
+
+    const previousWidth = this.#state.width;
+    const previousHeight = this.#state.height;
+
     this.#state.width = width;
     this.#state.height = height;
     this.#state.dpr = dpr;
     resizeCanvasLayer(this.#canvas, this.#context, width, height, dpr);
     this.clear();
-    this.#resetParticles();
+
+    if (this.#state.particles.length === 0 || previousWidth === 0 || previousHeight === 0) {
+      this.#resetParticles();
+      return;
+    }
+
+    this.#rescaleParticles(previousWidth, previousHeight, width, height);
+  }
+
+  dispose() {
+    this.#disposed = true;
+    this.#cursor.clear();
+    this.#state.particles = [];
+    this.#canvas.width = 0;
+    this.#canvas.height = 0;
   }
 
   start() {
@@ -94,6 +123,16 @@ export class ParticleField {
     );
 
     this.#state.particles = Array.from({ length: count }, () => this.#makeParticle());
+  }
+
+  #rescaleParticles(previousWidth, previousHeight, width, height) {
+    const scaleX = width / previousWidth;
+    const scaleY = height / previousHeight;
+
+    for (const particle of this.#state.particles) {
+      particle.x *= scaleX;
+      particle.y *= scaleY;
+    }
   }
 
   #makeParticle() {
@@ -149,12 +188,19 @@ export class ParticleField {
     }
 
     if (elapsed > explodeStart + this.#config.explodeMs) {
-      this.#revealTitle();
+      this.#markReady();
     }
 
-    if (!this.#state.settled) {
-      requestAnimationFrame((nextNow) => this.#animate(nextNow));
+    if (this.#state.ready) {
+      const tail = elapsed - explodeStart - this.#config.explodeMs;
+
+      if (this.#reduceMotion || tail > this.#maxExplodeTailMs || this.#fieldIsEmpty()) {
+        this.#settle();
+        return;
+      }
     }
+
+    requestAnimationFrame((nextNow) => this.#animate(nextNow));
   }
 
   #updateParticle(particle, elapsed, delta) {
@@ -247,13 +293,16 @@ export class ParticleField {
     if (!particle.exploded) {
       const outwardAngle =
         Math.atan2(particle.y - centerY, particle.x - centerX) + randomBetween(-0.55, 0.55);
-      const explodeSpeed = randomBetween(650, 1080) * particle.chaos;
+      const explodeSpeed = randomBetween(700, 1150) * particle.chaos;
 
       particle.vx = Math.cos(outwardAngle) * explodeSpeed;
       particle.vy = Math.sin(outwardAngle) * explodeSpeed;
       particle.exploded = true;
     }
 
+    const accel = 1 + 1.8 * delta;
+    particle.vx *= accel;
+    particle.vy *= accel;
     particle.x += particle.vx * delta;
     particle.y += particle.vy * delta;
   }
@@ -295,6 +344,10 @@ export class ParticleField {
 
   #rememberTrail(particle, now) {
     if (now - particle.lastTrailAt < this.#config.trailEveryMs) {
+      return;
+    }
+
+    if (!this.#isOnScreen(particle.x, particle.y, 0)) {
       return;
     }
 
@@ -342,14 +395,47 @@ export class ParticleField {
     this.#onRevealStart();
   }
 
-  #revealTitle() {
+  #markReady() {
+    if (this.#state.ready) {
+      return;
+    }
+
+    this.#state.ready = true;
+    this.#onReady();
+  }
+
+  #settle() {
     if (this.#state.settled) {
       return;
     }
 
     this.#state.settled = true;
     this.clear();
-    this.#onReady();
+  }
+
+  #isOnScreen(x, y, margin) {
+    return (
+      x >= -margin &&
+      x <= this.#state.width + margin &&
+      y >= -margin &&
+      y <= this.#state.height + margin
+    );
+  }
+
+  #fieldIsEmpty() {
+    for (const particle of this.#state.particles) {
+      if (this.#isOnScreen(particle.x, particle.y, this.#exitMargin)) {
+        return false;
+      }
+
+      for (const point of particle.trail) {
+        if (this.#isOnScreen(point.x, point.y, this.#exitMargin)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
 }
