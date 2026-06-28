@@ -1,0 +1,148 @@
+/* tobiinzi.com — minimal dark portfolio */
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/jetbrains-mono-latin-400.woff2") format("woff2");
+}
+
+:root {
+  --bg: #0b0b0c;
+  --fg: #e7e7e7;
+  --muted: #8a8a8f;
+  /* --accent defaults to the text color so the page stays neutral until a
+     swatch is chosen; main.js overrides it with the selected color. */
+  --accent: var(--fg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas,
+    monospace;
+  font-size: clamp(1rem, 0.85rem + 0.7vw, 1.2rem);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.5rem;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+/* Intro */
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: rise 0.7s ease both;
+}
+
+.intro p {
+  margin: 0;
+  max-width: 38ch;
+}
+
+.name {
+  color: var(--accent);
+  transition: color 0.35s ease;
+}
+
+/* Type palette */
+.palette {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  animation: rise 0.7s ease 0.1s both;
+}
+
+.type {
+  --size: 2.75rem;
+  width: var(--size);
+  height: var(--size);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.5;
+  filter: saturate(0.85);
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.type img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.type:hover {
+  opacity: 1;
+  filter: none;
+  transform: scale(1.1);
+}
+
+.type:focus-visible {
+  outline: none;
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--type-color);
+}
+
+.type.is-active {
+  opacity: 1;
+  filter: none;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--type-color);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro,
+  .palette {
+    animation: none;
+  }
+  .name,
+  .type {
+    transition: none;
+  }
+}

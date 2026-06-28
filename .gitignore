@@ -1,5 +1,14 @@
+# OS / editor junk
 .DS_Store
+Thumbs.db
+desktop.ini
+*:Zone.Identifier
+
+# Dependencies / virtual envs
 node_modules/
 env/
 venv/
+
+# Local-only
+archive/
 todo.md

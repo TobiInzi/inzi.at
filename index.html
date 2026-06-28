@@ -1,43 +1,85 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tobias Inzinger</title>
-  <meta name="description" content="Tobias Inzinger — computer science student at TUM.">
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="styles/base.css">
-  <link rel="stylesheet" href="styles/portfolio.css">
-  <link rel="stylesheet" href="styles/stage.css">
-  <link rel="stylesheet" href="styles/scenes/particle-burst.css">
-  <link rel="stylesheet" href="styles/transitions/water-drop.css">
-  <link rel="modulepreload" href="scripts/app.js">
-  <link rel="modulepreload" href="scripts/stage/orchestrator.js">
-  <link rel="modulepreload" href="scripts/stage/registry.js">
-  <link rel="modulepreload" href="scripts/lib/math.js">
-  <link rel="modulepreload" href="scripts/lib/canvas.js">
-  <link rel="modulepreload" href="scripts/lib/motion.js">
-  <link rel="modulepreload" href="scripts/lib/palette.js">
-  <link rel="modulepreload" href="scripts/lib/sequence-timers.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/index.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/config.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/particle-field.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/cursor-effect.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/title-burst.js">
-  <link rel="modulepreload" href="scripts/scenes/particle-burst/title.js">
-  <link rel="modulepreload" href="scripts/transitions/water-drop/index.js">
-  <link rel="modulepreload" href="scripts/transitions/water-drop/config.js">
-  <link rel="modulepreload" href="scripts/transitions/water-drop/sequence.js">
-  <script type="module" src="scripts/app.js"></script>
-</head>
-<body>
-  <div class="stage" id="stage" aria-label="Intro animation"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tobiinzi</title>
+    <meta
+      name="description"
+      content="Personal site and portfolio of tobiinzi."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="author" content="tobiinzi" />
+    <meta name="theme-color" content="#0b0b0c" />
 
-  <main class="portfolio" id="portfolio" aria-hidden="true">
-    <div class="portfolio-content">
-      <h1 class="portfolio-line portfolio-name">Tobias Inzinger</h1>
-      <p class="portfolio-line portfolio-tagline">Computer science student from TUM</p>
-    </div>
-  </main>
-</body>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+    <link
+      rel="preload"
+      href="assets/fonts/jetbrains-mono-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="intro" aria-label="Introduction">
+        <p>
+          Hi, I'm <span class="name">tobiinzi</span>. I'm a developer and
+          designer who builds careful, useful software.
+        </p>
+        <p>
+          I believe in simple tools, quiet craft, and the value of things that
+          just work. Recent work is on the way.
+        </p>
+      </section>
+
+      <nav class="palette" aria-label="Accent type">
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #21a34c"
+          data-color="#21a34c"
+          aria-pressed="false"
+          aria-label="Grass accent"
+        >
+          <img src="assets/types/canonical/grass.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #ed2f26"
+          data-color="#ed2f26"
+          aria-pressed="false"
+          aria-label="Fire accent"
+        >
+          <img src="assets/types/canonical/fire.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #0784e7"
+          data-color="#0784e7"
+          aria-pressed="false"
+          aria-label="Water accent"
+        >
+          <img src="assets/types/canonical/water.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #f4e411"
+          data-color="#f4e411"
+          aria-pressed="false"
+          aria-label="Lightning accent"
+        >
+          <img src="assets/types/canonical/lightning.png" alt="" width="44" height="44" />
+        </button>
+      </nav>
+    </main>
+
+    <script src="scripts/main.js" type="module"></script>
+  </body>
 </html>
