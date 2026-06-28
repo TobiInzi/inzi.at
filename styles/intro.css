@@ -38,6 +38,7 @@ body.site-final {
 }
 
 .particle-field,
+.fill-field,
 .color-wash,
 .intro-hit-target {
   position: absolute;
@@ -51,6 +52,13 @@ body.site-final {
   z-index: 0;
   pointer-events: none;
   transition: opacity 380ms ease;
+}
+
+.fill-field {
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .color-wash {
@@ -67,26 +75,6 @@ body.site-final {
 
 .intro.is-filled .main-title {
   visibility: hidden;
-}
-
-.letter-fill {
-  position: fixed;
-  top: var(--fill-y, 50%);
-  left: var(--fill-x, 50%);
-  z-index: 3;
-  width: 8vmax;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  pointer-events: none;
-  background: var(--main-color);
-  transform: translate(-50%, -50%) scale(0);
-  transition:
-    transform var(--circle-fill-ms) cubic-bezier(0.58, 0, 0.22, 1) var(--fill-delay);
-  will-change: transform;
-}
-
-.intro.is-opening .letter-fill {
-  transform: translate(-50%, -50%) scale(16);
 }
 
 .intro-hit-target {

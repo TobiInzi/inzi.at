@@ -18,6 +18,7 @@
 
   const HOME_SEQUENCE = {
     circleFillDelayMs: 430,
+    circleFillMs: 1850,
     letterSwallowDelayMs: 850,
     introExitMs: 1850,
     tipChangeMs: 950,
@@ -67,6 +68,8 @@
   const hitTarget = document.querySelector("#introHitTarget");
   const canvas = document.querySelector("#particleField");
   const context = canvas.getContext("2d", { alpha: false });
+  const fillCanvas = document.querySelector("#letterFillField");
+  const fillContext = fillCanvas.getContext("2d");
   const startPage = chooseStartPage();
 
   applyStartPage(startPage);
@@ -77,6 +80,9 @@
     height: 0,
     dpr: 1,
     particles: [],
+    letterFillCircles: [],
+    letterFillFrame: 0,
+    letterFillStartedAt: 0,
     cursorParticles: [],
     cursorX: 0,
     cursorY: 0,
@@ -193,19 +199,28 @@
     state.height = window.innerHeight;
     state.dpr = Math.min(window.devicePixelRatio || 1, INTRO.maxDevicePixelRatio);
 
-    canvas.width = Math.floor(state.width * state.dpr);
-    canvas.height = Math.floor(state.height * state.dpr);
-    canvas.style.width = `${state.width}px`;
-    canvas.style.height = `${state.height}px`;
+    resizeCanvasLayer(canvas, context, state.dpr);
+    resizeCanvasLayer(fillCanvas, fillContext, 1);
+    clearParticleField();
+    clearLetterFillField();
+  }
 
-    context.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
-    context.fillStyle = theme.pageBg;
-    context.fillRect(0, 0, state.width, state.height);
+  function resizeCanvasLayer(canvasElement, canvasContext, dpr) {
+    canvasElement.width = Math.floor(state.width * dpr);
+    canvasElement.height = Math.floor(state.height * dpr);
+    canvasElement.style.width = `${state.width}px`;
+    canvasElement.style.height = `${state.height}px`;
+
+    canvasContext.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function clearParticleField() {
     context.fillStyle = theme.pageBg;
     context.fillRect(0, 0, state.width, state.height);
+  }
+
+  function clearLetterFillField() {
+    fillContext.clearRect(0, 0, state.width, state.height);
   }
 
   function resetParticles() {
@@ -515,6 +530,7 @@
     prepareLetterBurst();
     requestAnimationFrame(() => {
       intro.classList.add("is-opening");
+      startLetterFill();
     });
 
     setSequenceTimer("introExit", () => {
@@ -522,6 +538,7 @@
       document.body.classList.add("site-open");
       intro.classList.add("is-done");
       intro.setAttribute("aria-hidden", "true");
+      stopLetterFill();
       setSequenceTimer("tipChange", showSecondArrivalTip, HOME_SEQUENCE.tipChangeMs);
       setSequenceTimer("tipFadeOut", hideArrivalTip, HOME_SEQUENCE.tipFadeOutMs);
       setSequenceTimer("dropStart", startWaterDrop, HOME_SEQUENCE.dropStartMs);
@@ -634,15 +651,11 @@
   }
 
   function prepareLetterBurst() {
-    const oldFills = intro.querySelectorAll(".letter-fill");
-
-    for (const fill of oldFills) {
-      fill.remove();
-    }
-
     const letters = Array.from(titleText.querySelectorAll(".main-title-letter"));
     const activeLetters = letters.filter((letter) => !letter.classList.contains("is-space"));
     const targets = createBurstTargets(activeLetters.length);
+    state.letterFillCircles = [];
+    clearLetterFillField();
 
     activeLetters.forEach((letter, index) => {
       const rect = letter.getBoundingClientRect();
@@ -662,7 +675,12 @@
       letter.style.setProperty("--letter-delay", `${delay}ms`);
       letter.style.setProperty("--letter-fade-delay", `${fadeDelay}ms`);
 
-      intro.append(createLetterFill(targetX, targetY, HOME_SEQUENCE.circleFillDelayMs + delay));
+      state.letterFillCircles.push({
+        x: targetX,
+        y: targetY,
+        delay: HOME_SEQUENCE.circleFillDelayMs + delay,
+        radius: getViewportCoverRadius(targetX, targetY),
+      });
     });
   }
 
@@ -707,15 +725,64 @@
     return shuffled;
   }
 
-  function createLetterFill(x, y, delay) {
-    const fill = document.createElement("span");
-    fill.className = "letter-fill";
-    fill.setAttribute("aria-hidden", "true");
-    fill.style.setProperty("--fill-x", `${x}px`);
-    fill.style.setProperty("--fill-y", `${y}px`);
-    fill.style.setProperty("--fill-delay", `${delay}ms`);
+  function getViewportCoverRadius(x, y) {
+    return Math.max(
+      Math.hypot(x, y),
+      Math.hypot(state.width - x, y),
+      Math.hypot(x, state.height - y),
+      Math.hypot(state.width - x, state.height - y)
+    );
+  }
 
-    return fill;
+  function startLetterFill() {
+    if (state.letterFillFrame !== 0) {
+      cancelAnimationFrame(state.letterFillFrame);
+    }
+
+    state.letterFillStartedAt = performance.now();
+    state.letterFillFrame = requestAnimationFrame(drawLetterFill);
+  }
+
+  function stopLetterFill() {
+    if (state.letterFillFrame !== 0) {
+      cancelAnimationFrame(state.letterFillFrame);
+      state.letterFillFrame = 0;
+    }
+
+    clearLetterFillField();
+  }
+
+  function drawLetterFill(now) {
+    state.letterFillFrame = 0;
+    clearLetterFillField();
+
+    let isComplete = true;
+    fillContext.fillStyle = theme.mainColor;
+
+    for (const circle of state.letterFillCircles) {
+      const progress =
+        (now - state.letterFillStartedAt - circle.delay) / HOME_SEQUENCE.circleFillMs;
+
+      if (progress <= 0) {
+        isComplete = false;
+        continue;
+      }
+
+      const clampedProgress = Math.min(progress, 1);
+      const radius = circle.radius * easeInOutCubic(clampedProgress);
+
+      fillContext.beginPath();
+      fillContext.arc(circle.x, circle.y, radius, 0, Math.PI * 2);
+      fillContext.fill();
+
+      if (clampedProgress < 1) {
+        isComplete = false;
+      }
+    }
+
+    if (!isComplete && !intro.classList.contains("is-done")) {
+      state.letterFillFrame = requestAnimationFrame(drawLetterFill);
+    }
   }
 
   function startFinalTransition(origin = getLiveDropContactPoint()) {
@@ -866,6 +933,9 @@
       const pausedFor = performance.now() - state.hiddenAt;
 
       state.startedAt += pausedFor;
+      if (state.letterFillStartedAt !== 0) {
+        state.letterFillStartedAt += pausedFor;
+      }
       state.lastTime = performance.now();
       state.hiddenAt = 0;
     }
