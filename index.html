@@ -3,46 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>tobiinzi</title>
-  <meta name="description" content="Personal site of Tobi Inzinger — currently under construction.">
+  <title>Tobias Inzinger</title>
+  <meta name="description" content="Tobias Inzinger — computer science student at TUM.">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles/base.css">
   <link rel="stylesheet" href="styles/portfolio.css">
-  <link rel="stylesheet" href="styles/intro.css">
-  <link rel="modulepreload" href="scripts/intro/config.js">
-  <link rel="modulepreload" href="scripts/intro/motion.js">
-  <link rel="modulepreload" href="scripts/intro/canvas.js">
-  <link rel="modulepreload" href="scripts/intro/math.js">
-  <link rel="modulepreload" href="scripts/intro/cursor-effect.js">
-  <link rel="modulepreload" href="scripts/intro/particle-field.js">
-  <link rel="modulepreload" href="scripts/intro/portfolio-sequence.js">
-  <link rel="modulepreload" href="scripts/intro/sequence-timers.js">
-  <link rel="modulepreload" href="scripts/intro/theme.js">
-  <link rel="modulepreload" href="scripts/intro/title-burst.js">
-  <link rel="modulepreload" href="scripts/intro/title.js">
-  <script type="module" src="scripts/intro.js"></script>
+  <link rel="stylesheet" href="styles/stage.css">
+  <link rel="stylesheet" href="styles/scenes/particle-burst.css">
+  <link rel="stylesheet" href="styles/transitions/water-drop.css">
+  <link rel="modulepreload" href="scripts/app.js">
+  <link rel="modulepreload" href="scripts/stage/orchestrator.js">
+  <link rel="modulepreload" href="scripts/stage/registry.js">
+  <link rel="modulepreload" href="scripts/lib/math.js">
+  <link rel="modulepreload" href="scripts/lib/canvas.js">
+  <link rel="modulepreload" href="scripts/lib/motion.js">
+  <link rel="modulepreload" href="scripts/lib/palette.js">
+  <link rel="modulepreload" href="scripts/lib/sequence-timers.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/index.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/config.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/particle-field.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/cursor-effect.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/title-burst.js">
+  <link rel="modulepreload" href="scripts/scenes/particle-burst/title.js">
+  <link rel="modulepreload" href="scripts/transitions/water-drop/index.js">
+  <link rel="modulepreload" href="scripts/transitions/water-drop/config.js">
+  <link rel="modulepreload" href="scripts/transitions/water-drop/sequence.js">
+  <script type="module" src="scripts/app.js"></script>
 </head>
-<body class="landing-page">
-  <div class="intro" id="intro" aria-hidden="false">
-    <canvas class="particle-field" id="particleField"></canvas>
-    <canvas class="fill-field" id="letterFillField" aria-hidden="true"></canvas>
-    <div class="color-wash" aria-hidden="true"></div>
-    <button class="main-title" id="mainTitle" type="button" aria-label="Open site">
-      <span class="main-title-text" id="mainTitleText"></span>
-      <span class="main-title-subtext" id="mainTitleSubtext"></span>
-    </button>
-    <button class="intro-hit-target" id="introHitTarget" type="button" tabindex="-1" aria-hidden="true"></button>
-  </div>
+<body>
+  <div class="stage" id="stage" aria-label="Intro animation"></div>
 
-  <main class="portfolio" id="portfolioMain" aria-live="polite" aria-hidden="true">
-    <div class="arrival-loader">
-      <p class="arrival-tip" id="arrivalTip">this is my website</p>
-      <span class="arrival-spinner" aria-hidden="true">
-        <span class="arrival-ring"></span>
-        <img class="arrival-drop" src="assets/droplet-solid-full.svg" alt="">
-      </span>
+  <main class="portfolio" id="portfolio" aria-hidden="true">
+    <div class="portfolio-content">
+      <h1 class="portfolio-line portfolio-name">Tobias Inzinger</h1>
+      <p class="portfolio-line portfolio-tagline">Computer science student from TUM</p>
     </div>
-    <h1 class="construction-text">This website is under construction</h1>
   </main>
 </body>
 </html>

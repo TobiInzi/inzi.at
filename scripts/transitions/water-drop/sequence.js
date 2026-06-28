@@ -1,53 +1,63 @@
-export class PortfolioSequence {
+export class WaterDropSequence {
   #config;
   #timers;
-  #arrivalTip;
-  #arrivalSpinner;
-  #arrivalDrop;
+  #root;
+  #tip;
+  #spinner;
+  #drop;
+  #onComplete;
   #state = {
     completed: false,
     dropFillFrame: 0,
   };
 
-  constructor({ config, timers, arrivalTip, arrivalSpinner, arrivalDrop }) {
+  constructor({ config, timers, root, tip, spinner, drop, onComplete }) {
     this.#config = config;
     this.#timers = timers;
-    this.#arrivalTip = arrivalTip;
-    this.#arrivalSpinner = arrivalSpinner;
-    this.#arrivalDrop = arrivalDrop;
-  }
-
-  get isComplete() {
-    return this.#state.completed;
+    this.#root = root;
+    this.#tip = tip;
+    this.#spinner = spinner;
+    this.#drop = drop;
+    this.#onComplete = onComplete;
   }
 
   start() {
-    this.#timers.set("tipChange", () => this.#showSecondArrivalTip(), this.#config.tipChangeMs);
-    this.#timers.set("tipFadeOut", () => this.#hideArrivalTip(), this.#config.tipFadeOutMs);
+    this.#timers.set("tipChange", () => this.#showSecondTip(), this.#config.tipChangeMs);
+    this.#timers.set("tipFadeOut", () => this.#hideTip(), this.#config.tipFadeOutMs);
     this.#timers.set("dropStart", () => this.#startWaterDrop(), this.#config.dropStartMs);
   }
 
-  #showSecondArrivalTip() {
-    this.#arrivalTip.classList.add("is-changing");
+  dispose() {
+    if (this.#state.dropFillFrame !== 0) {
+      cancelAnimationFrame(this.#state.dropFillFrame);
+      this.#state.dropFillFrame = 0;
+    }
+
+    this.#timers.clearAll();
+    this.#state.completed = true;
+  }
+
+  #showSecondTip() {
+    this.#tip.classList.add("is-changing");
 
     this.#timers.set("tipSwap", () => {
-      this.#arrivalTip.textContent = "have fun";
-      this.#arrivalTip.classList.remove("is-changing");
+      this.#tip.textContent = this.#config.secondTip;
+      this.#tip.classList.remove("is-changing");
     }, this.#config.tipSwapMs);
   }
 
-  #hideArrivalTip() {
-    this.#arrivalTip.classList.add("is-exiting");
+  #hideTip() {
+    this.#tip.classList.add("is-exiting");
   }
 
   #startWaterDrop() {
-    document.body.classList.add("site-dot-ready");
+    this.#root.classList.add("dot-ready");
 
     this.#timers.set("dropFall", () => {
       this.#setDropFallMotion();
-      document.body.classList.add("site-drop-falling");
+      this.#root.classList.add("drop-falling");
       this.#timers.set("dropMorph", () => {
-        document.body.classList.add("site-drop-ready");
+        this.#root.classList.add("drop-ready");
       }, this.#config.dropMorphAfterFallMs);
       this.#state.dropFillFrame = requestAnimationFrame(() => this.#watchDropFillLine());
     }, this.#config.dotShrinkMs);
@@ -55,15 +65,15 @@ export class PortfolioSequence {
 
   #setDropFallMotion() {
     const fillLineY = window.innerHeight * 0.8;
-    const dropRect = this.#arrivalDrop.getBoundingClientRect();
+    const dropRect = this.#drop.getBoundingClientRect();
     const distanceToFillLine = Math.max(0, fillLineY - dropRect.bottom);
     const fallDistance = Math.max(
       distanceToFillLine + window.innerHeight * 0.35,
       window.innerHeight - dropRect.top + dropRect.height
     );
 
-    this.#arrivalSpinner.style.setProperty("--drop-fall-ms", `${this.#config.dropFallMs}ms`);
-    this.#arrivalSpinner.style.setProperty("--drop-fall-y", `${fallDistance}px`);
+    this.#spinner.style.setProperty("--drop-fall-ms", `${this.#config.dropFallMs}ms`);
+    this.#spinner.style.setProperty("--drop-fall-y", `${fallDistance}px`);
   }
 
   #watchDropFillLine() {
@@ -76,7 +86,7 @@ export class PortfolioSequence {
     const fillLineY = window.innerHeight * 0.8;
     const dropOrigin = this.#getLiveDropContactPoint();
 
-    if (document.body.classList.contains("site-drop-ready") && dropOrigin.y >= fillLineY) {
+    if (this.#root.classList.contains("drop-ready") && dropOrigin.y >= fillLineY) {
       this.#startFinalTransition({
         x: dropOrigin.x,
         y: fillLineY + this.#getRenderedDropSize(),
@@ -92,27 +102,26 @@ export class PortfolioSequence {
       return;
     }
 
-    this.#setFinalFillOrigin(origin);
-    document.body.classList.add("site-finalizing");
+    this.#setWipeOrigin(origin);
+    this.#root.classList.add("finalizing");
     this.#timers.set("dropHide", () => {
-      document.body.classList.add("site-drop-hidden");
+      this.#root.classList.add("drop-hidden");
     }, this.#config.dropHideMs);
 
     this.#timers.set("finalDone", () => {
       this.#state.completed = true;
-      document.body.classList.add("site-final");
+      this.#root.classList.add("final");
+      this.#onComplete();
     }, this.#config.blackWipeMs);
   }
 
-  #setFinalFillOrigin(origin) {
-    const root = document.documentElement;
-
-    root.style.setProperty("--final-fill-x", `${origin.x}px`);
-    root.style.setProperty("--final-fill-y", `${origin.y}px`);
+  #setWipeOrigin(origin) {
+    this.#root.style.setProperty("--wipe-x", `${origin.x}px`);
+    this.#root.style.setProperty("--wipe-y", `${origin.y}px`);
   }
 
   #getLiveDropContactPoint() {
-    const rect = this.#arrivalDrop.getBoundingClientRect();
+    const rect = this.#drop.getBoundingClientRect();
 
     return {
       x: rect.left + rect.width / 2,
@@ -121,6 +130,6 @@ export class PortfolioSequence {
   }
 
   #getRenderedDropSize() {
-    return this.#arrivalDrop.getBoundingClientRect().height;
+    return this.#drop.getBoundingClientRect().height;
   }
 }

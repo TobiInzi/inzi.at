@@ -1,5 +1,5 @@
-import { clearCanvas, resizeCanvasLayer } from "./canvas.js";
-import { easeInOutCubic, randomBetween, shuffle } from "./math.js";
+import { clearCanvas, resizeCanvasLayer } from "../../lib/canvas.js";
+import { easeInOutCubic, randomBetween, shuffle } from "../../lib/math.js";
 
 export class TitleBurst {
   #canvas;

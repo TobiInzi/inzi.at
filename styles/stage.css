@@ -1,0 +1,77 @@
+/* The animation layer: a fixed overlay above the portfolio that hosts the
+   active scene (stage 1) and transition (stage 2), plus the scene selector. */
+
+body.stage-active {
+  overflow: hidden;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  background: var(--page-bg);
+  opacity: 0;
+  transition: opacity 900ms ease;
+  isolation: isolate;
+}
+
+.stage.is-visible {
+  opacity: 1;
+}
+
+.stage.is-done {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.stage-selector {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1rem, 4svh, 2.5rem);
+  z-index: 5;
+  display: flex;
+  gap: 0.5rem;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+
+.stage-selector.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.stage-selector__button {
+  appearance: none;
+  margin: 0;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--main-color) 55%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--main-color);
+  font: inherit;
+  font-size: clamp(0.7rem, 1.4vw, 0.85rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.stage-selector__button:hover {
+  border-color: var(--main-color);
+}
+
+.stage-selector__button.is-active {
+  background: var(--main-color);
+  border-color: var(--main-color);
+  color: var(--text-on-main);
+}
+
+.stage-selector__button:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 3px;
+}

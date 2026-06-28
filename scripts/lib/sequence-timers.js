@@ -23,6 +23,12 @@ export class SequenceTimers {
     this.#timers.delete(name);
   }
 
+  clearAll() {
+    for (const name of [...this.#timers.keys()]) {
+      this.clear(name);
+    }
+  }
+
   pause() {
     const now = performance.now();
 

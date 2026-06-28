@@ -1,5 +1,5 @@
-import { drawPixelDiamond } from "./canvas.js";
-import { randomBetween } from "./math.js";
+import { drawPixelDiamond } from "../../lib/canvas.js";
+import { randomBetween } from "../../lib/math.js";
 
 export class CursorEffect {
   #context;

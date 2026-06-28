@@ -1,7 +1,7 @@
-import { drawPixelDiamond, fillCanvas, resizeCanvasLayer } from "./canvas.js";
+import { drawPixelDiamond, fillCanvas, resizeCanvasLayer } from "../../lib/canvas.js";
+import { easeInOutCubic, easeInOutSine, randomBetween } from "../../lib/math.js";
+import { prefersReducedMotion } from "../../lib/motion.js";
 import { CursorEffect } from "./cursor-effect.js";
-import { easeInOutCubic, easeInOutSine, randomBetween } from "./math.js";
-import { prefersReducedMotion } from "./motion.js";
 
 export class ParticleField {
   #canvas;
@@ -437,5 +437,4 @@ export class ParticleField {
 
     return true;
   }
-
 }

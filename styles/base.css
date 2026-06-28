@@ -4,8 +4,6 @@
   --text-on-main: #050505;
   --final-bg: #050505;
   --final-text: #f4f1ed;
-  --intro-fade-ms: 900ms;
-  --letter-burst-ms: 620ms;
   font-family:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
@@ -21,9 +19,10 @@ body {
   margin: 0;
 }
 
+/* The portfolio (stage 3) is the base layer and is always on black. */
 body {
-  color: var(--main-color);
-  background: var(--page-bg);
+  color: var(--final-text);
+  background: var(--final-bg);
 }
 
 @media (prefers-reduced-motion: reduce) {

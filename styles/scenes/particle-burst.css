@@ -1,46 +1,20 @@
-body.landing-page {
-  overflow: hidden;
-}
+/* Stage 1 scene: particle field that gathers, collides and bursts, revealing
+   a "click to start" prompt; the click bursts the title and fills the screen
+   with the palette colour (the solid-colour hand-off to stage 2). */
 
-body.site-open {
-  overflow: auto;
-  background: var(--main-color);
-}
-
-body.site-final {
-  background: var(--final-bg);
-}
-
-.intro {
-  position: fixed;
+.particle-burst {
+  --letter-burst-ms: 620ms;
+  position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--page-bg);
-  opacity: 0;
-  z-index: 10;
-  transition: opacity var(--intro-fade-ms) ease;
-  isolation: isolate;
-}
-
-.intro.is-visible {
-  opacity: 1;
-}
-
-.intro.is-ready {
-  cursor: pointer;
-}
-
-.intro.is-done {
-  pointer-events: none;
-  visibility: hidden;
 }
 
 .particle-field,
 .fill-field,
 .color-wash,
-.intro-hit-target {
+.hit-target {
   position: absolute;
   inset: 0;
 }
@@ -69,15 +43,15 @@ body.site-final {
   transition: none;
 }
 
-.intro.is-filled .color-wash {
+.particle-burst.is-filled .color-wash {
   opacity: 1;
 }
 
-.intro.is-filled .main-title {
+.particle-burst.is-filled .main-title {
   visibility: hidden;
 }
 
-.intro-hit-target {
+.hit-target {
   z-index: 3;
   display: none;
   border: 0;
@@ -87,11 +61,15 @@ body.site-final {
   cursor: pointer;
 }
 
-.intro.is-ready .intro-hit-target {
+.particle-burst.is-ready {
+  cursor: pointer;
+}
+
+.particle-burst.is-ready .hit-target {
   display: block;
 }
 
-.intro.is-opening .intro-hit-target {
+.particle-burst.is-opening .hit-target {
   display: none;
 }
 
@@ -137,6 +115,8 @@ body.site-final {
 
 .main-title-subtext {
   display: block;
+  font-size: clamp(0.78rem, 1.5vw, 1rem);
+  font-weight: 600;
 }
 
 .main-title-letter {
@@ -158,11 +138,6 @@ body.site-final {
   width: 0.28em;
 }
 
-.main-title-subtext {
-  font-size: clamp(0.78rem, 1.5vw, 1rem);
-  font-weight: 600;
-}
-
 .main-title:focus:not(:focus-visible) {
   outline: none;
 }
@@ -172,16 +147,14 @@ body.site-final {
   outline-offset: 6px;
 }
 
-.intro.is-opening .main-title {
+.particle-burst.is-opening .main-title {
   color: var(--main-color);
   clip-path: none;
-  transform: translateY(0) scale(1);
   opacity: 1;
-  transition:
-    opacity 120ms ease;
+  transition: opacity 120ms ease;
 }
 
-.intro.is-opening .main-title-letter {
+.particle-burst.is-opening .main-title-letter {
   opacity: 0;
   transform:
     translate3d(var(--letter-x), var(--letter-y), 0)
@@ -189,7 +162,7 @@ body.site-final {
     scale(var(--letter-scale));
 }
 
-.intro.is-opening .main-title-subtext {
+.particle-burst.is-opening .main-title-subtext {
   opacity: 0;
   transform: translateY(0.3rem);
   transition:

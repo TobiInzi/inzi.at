@@ -29,3 +29,7 @@ export function shuffle(items) {
 
   return shuffled;
 }
+
+export function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}

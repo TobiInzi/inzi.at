@@ -1,214 +1,59 @@
+/* Stage 3: the portfolio. Fully self-contained — this file plus the markup
+   render the real site with no dependency on the intro/transition layers.
+   Adding `is-revealed` plays the bottom-up text reveal (already set in the
+   standalone portfolio.html; added by the orchestrator in the full flow). */
+
 .portfolio {
   position: relative;
   min-height: 100svh;
   display: grid;
-  grid-template-areas: "stage";
   place-items: center;
   padding: 2rem;
-  overflow: hidden;
-  color: var(--text-on-main);
-  background: var(--main-color);
-  opacity: 0;
-  transition: opacity 520ms ease;
-  isolation: isolate;
-}
-
-.portfolio::before {
-  content: "";
-  position: absolute;
-  top: var(--final-fill-y, 50%);
-  left: var(--final-fill-x, 50%);
-  z-index: 2;
-  width: 160vmax;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  pointer-events: none;
-  background: var(--final-bg);
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 980ms cubic-bezier(0.68, 0, 0.2, 1);
-}
-
-body.site-open .portfolio,
-.portfolio-standalone .portfolio {
-  opacity: 1;
-}
-
-body.site-finalizing .portfolio::before,
-body.site-final .portfolio::before {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-body.site-final .portfolio,
-.portfolio-final {
   color: var(--final-text);
   background: var(--final-bg);
 }
 
-.portfolio-final::before {
-  content: none;
-}
-
-.arrival-loader {
-  --loader-offset: clamp(1.25rem, 6svh, 4rem);
-  position: relative;
-  z-index: 1;
+.portfolio-content {
   display: grid;
-  gap: clamp(0.9rem, 2vw, 1.2rem);
-  place-content: center;
+  gap: clamp(0.5rem, 1.6vw, 0.9rem);
   justify-items: center;
-  grid-area: stage;
-  align-self: center;
-  margin: 0;
-  opacity: 0;
-  transform: translateY(calc(var(--loader-offset) + 0.45rem));
-  transition:
-    opacity 620ms ease,
-    transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-body.site-open .arrival-loader {
-  opacity: 1;
-  transform: translateY(var(--loader-offset));
-}
-
-.arrival-tip {
-  margin: 0;
-  font-size: clamp(1.05rem, 2.7vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0;
   text-align: center;
-  transition:
-    opacity 520ms ease,
-    transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.arrival-tip.is-changing,
-.arrival-tip.is-exiting {
-  opacity: 0;
-  transform: translateY(-0.35rem);
-}
-
-.arrival-spinner {
-  position: relative;
-  --drop-fall-y: 11rem;
-  --drop-fall-ms: 1120ms;
-  width: clamp(1.4rem, 3vw, 2rem);
-  aspect-ratio: 1;
-  transform: translateY(0);
-  transition:
-    transform var(--drop-fall-ms) cubic-bezier(0.42, 0, 0.95, 0.68);
-}
-
-.arrival-ring,
-.arrival-drop {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-}
-
-.arrival-ring {
-  inset: 0;
-  opacity: 1;
-  transform: scale(1);
-  transition:
-    opacity 220ms ease,
-    transform 430ms cubic-bezier(0.5, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.arrival-ring::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: transparent;
-  border: 2px solid rgb(5 5 5 / 0.22);
-  border-top-color: currentColor;
-  border-radius: 50%;
-  animation: arrival-spin 1150ms linear infinite;
-  transition:
-    background 180ms ease,
-    border-color 180ms ease;
-}
-
-.arrival-drop {
-  width: 88%;
-  height: 122%;
-  object-fit: contain;
-  opacity: 0;
-  transform: translate(-50%, -64%) scale(0.46);
-  transform-origin: 50% 68%;
-  transition:
-    opacity 300ms ease,
-    transform 780ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-body.site-dot-ready .arrival-ring,
-body.site-drop-ready .arrival-ring,
-body.site-drop-falling .arrival-ring {
-  transform: scale(0.34);
-}
-
-body.site-dot-ready .arrival-ring::before,
-body.site-drop-ready .arrival-ring::before,
-body.site-drop-falling .arrival-ring::before {
-  background: var(--final-bg);
-  border-color: var(--final-bg);
-  animation: none;
-}
-
-body.site-drop-ready .arrival-ring,
-body.site-drop-falling .arrival-ring {
-  transition-delay: 120ms;
-  opacity: 0;
-}
-
-body.site-dot-ready .arrival-drop {
-  opacity: 0;
-  transform: translate(-50%, -64%) scale(0.46);
-}
-
-body.site-drop-ready .arrival-drop {
-  opacity: 1;
-  transform: translate(-50%, -64%) scale(1);
-}
-
-body.site-drop-hidden .arrival-drop {
-  opacity: 0;
-  transition-duration: 120ms;
-}
-
-body.site-drop-falling .arrival-spinner {
-  transform: translateY(var(--drop-fall-y));
-}
-
-@keyframes arrival-spin {
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-.construction-text {
-  position: relative;
-  z-index: 3;
-  grid-area: stage;
+.portfolio-name {
   margin: 0;
-  color: var(--final-text);
-  font-size: clamp(0.875rem, 1.5vw, 1.05rem);
+  font-size: clamp(1.9rem, 6vw, 3.4rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.portfolio-tagline {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.2vw, 1.3rem);
   font-weight: 500;
-  line-height: 1.5;
-  letter-spacing: 0;
-  text-align: center;
-  opacity: 0;
-  transform: translateY(1rem);
-  transition:
-    opacity 560ms ease,
-    transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  color: rgb(244 241 237 / 0.72);
 }
 
-body.site-final .construction-text,
-.portfolio-standalone .construction-text {
-  opacity: 1;
-  transform: translateY(0);
+.portfolio-line {
+  opacity: 0;
+}
+
+.portfolio.is-revealed .portfolio-line {
+  animation: portfolio-rise 760ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.portfolio.is-revealed .portfolio-line:nth-child(2) {
+  animation-delay: 130ms;
+}
+
+@keyframes portfolio-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

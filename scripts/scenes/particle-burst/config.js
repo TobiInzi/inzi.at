@@ -1,6 +1,6 @@
-export const INTRO = {
+export const PARTICLE_BURST = {
   mainText: "click to start",
-  subText: "refresh for another theme",
+  subText: "refresh for new colors",
   particleCount: 20,
   warmupMs: 2600,
   gatherMs: 2300,
@@ -12,26 +12,15 @@ export const INTRO = {
   cursorParticleMax: 36,
   cursorSpawnEveryMs: 34,
   cursorActiveMs: 140,
-  maxDevicePixelRatio: 2,
-};
-
-export const HOME_SEQUENCE = {
   circleFillDelayMs: 430,
   circleFillMs: 1850,
   letterSwallowDelayMs: 850,
-  introExitMs: 1850,
-  tipChangeMs: 950,
-  tipSwapMs: 460,
-  tipFadeOutMs: 2300,
-  dropStartMs: 2700,
-  dotShrinkMs: 320,
-  dropMorphAfterFallMs: 110,
-  dropFallMs: 1120,
-  dropHideMs: 55,
-  blackWipeMs: 980,
+  exitMs: 1850,
 };
 
-export const START_PAGES = [
+// Palettes are a flavour of this one animation, not a global theme:
+// a fresh one is picked at random every time the scene starts.
+export const PALETTES = [
   {
     name: "ember",
     pageBg: "#0d090a",
