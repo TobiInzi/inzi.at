@@ -5,8 +5,8 @@
 The type symbols are a **fan-made** ("Pokémon TCG — all type symbols") set
 shared on Reddit:
 
-- Source: https://www.reddit.com/r/pokemon/comments/1p8mv1f/pokemon_tcg_trading_card_game_all_type_symbols/
-- Creator: u/RestorerForer (https://www.reddit.com/user/RestorerForer/)
+- Source: <https://www.reddit.com/r/pokemon/comments/1p8mv1f/pokemon_tcg_trading_card_game_all_type_symbols/>
+- Creator: u/RestorerForer (<https://www.reddit.com/user/RestorerForer/>)
 - Retrieved: 2026-06-28
 
 The single source image (`pokemon-tcg-trading-card-game-all-type-symbols-fanmade-to-v0-rekm4sfp814g1.webp`)
@@ -31,4 +31,4 @@ remove or replace them if needed.
 - **JetBrains Mono** (`jetbrains-mono-latin-400.woff2`), self-hosted Latin
   subset, weight 400.
 - License: SIL Open Font License 1.1 — see `fonts/LICENSE.txt`.
-- Source: https://github.com/JetBrains/JetBrainsMono (via Fontsource).
+- Source: <https://github.com/JetBrains/JetBrainsMono> (via Fontsource).
