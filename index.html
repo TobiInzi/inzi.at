@@ -12,7 +12,7 @@
     <meta name="author" content="tobiinzi" />
     <meta name="theme-color" content="#0b0b0c" />
 
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/types/rainbow.png" type="image/png" />
 
     <link
       rel="preload"
@@ -24,14 +24,31 @@
     <link rel="stylesheet" href="styles/main.css" />
   </head>
   <body>
-    <main class="container">
-      <section class="intro" aria-label="Introduction">
-        <p>
-          Hi, I'm <span class="name">tobiinzi</span>. I'm a computer science
-          student based in Munich.
-        </p>
-        <p>This is my personal website.</p>
-      </section>
+    <div class="layout">
+      <aside class="sidebar">
+        <nav class="sections" aria-label="Sections">
+          <button type="button" class="section-link is-current" data-section="1" aria-current="true">Section 1</button>
+          <button type="button" class="section-link" data-section="2">Section 2</button>
+          <button type="button" class="section-link" data-section="3">Section 3</button>
+          <button type="button" class="section-link" data-section="4">Section 4</button>
+        </nav>
+        <p class="copyright">© 2026 tobiinzi</p>
+      </aside>
+
+      <main class="content">
+        <section class="panel is-active" data-section="1" tabindex="-1">
+          <h1 class="panel-title">Section 1</h1>
+        </section>
+        <section class="panel" data-section="2" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 2</h1>
+        </section>
+        <section class="panel" data-section="3" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 3</h1>
+        </section>
+        <section class="panel" data-section="4" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 4</h1>
+        </section>
+      </main>
 
       <nav class="palette" aria-label="Accent type">
         <button
@@ -145,7 +162,7 @@
           <img src="assets/types/colorless.png" alt="" width="44" height="44" />
         </button>
       </nav>
-    </main>
+    </div>
 
     <script src="scripts/main.js" type="module"></script>
   </body>

@@ -46,46 +46,102 @@ body {
   color: var(--bg);
 }
 
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 2.5rem;
-  max-width: 46rem;
-  margin: 0 auto;
-  padding: clamp(1.5rem, 5vw, 4rem);
+/* Three-part layout: left pillar | scrollable main | right icon pillar */
+.layout {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: clamp(9rem, 18vw, 14rem) 1fr clamp(3.5rem, 6vw, 4.5rem);
+  overflow: hidden;
 }
 
-/* Intro */
-.intro {
+/* Left pillar */
+.sidebar {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2vw, 1.75rem);
   animation: rise 0.7s ease both;
 }
 
-.intro p {
-  margin: 0;
-  max-width: 38ch;
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
-.name {
-  color: var(--accent);
+.section-link {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  width: fit-content;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.section-link:hover,
+.section-link:focus-visible {
+  color: var(--fg);
+  outline: none;
+}
+
+.section-link.is-current {
+  color: var(--fg);
+}
+
+.copyright {
+  margin: 0;
+  font-size: 0.85em;
+  color: var(--muted);
   transition: color 0.35s ease;
 }
 
-/* Type palette */
+.has-accent .copyright {
+  color: var(--accent);
+}
+
+/* Main content (scrolls when it overflows) */
+.content {
+  overflow-y: auto;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+}
+
+.panel {
+  max-width: 46rem;
+  animation: rise 0.5s ease both;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel-title {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(1.4rem, 1rem + 1.5vw, 2rem);
+}
+
+/* Right pillar: icons stacked top-to-bottom, steady */
 .palette {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
   align-items: center;
+  gap: 0.9rem;
+  margin: 0;
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+  overflow: visible;
+  -webkit-user-select: none;
+  user-select: none;
   animation: rise 0.7s ease 0.1s both;
 }
 
 .type {
-  --size: 2.75rem;
+  --size: 1.25rem;
   width: var(--size);
   height: var(--size);
   padding: 0;
@@ -95,10 +151,7 @@ body {
   cursor: pointer;
   display: grid;
   place-items: center;
-  opacity: 0.5;
-  filter: saturate(0.85);
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease,
-    filter 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .type img {
@@ -109,20 +162,15 @@ body {
 }
 
 .type:hover {
-  opacity: 1;
-  filter: none;
   transform: scale(1.1);
 }
 
 .type:focus-visible {
   outline: none;
-  opacity: 1;
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--type-color);
 }
 
 .type.is-active {
-  opacity: 1;
-  filter: none;
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--type-color);
 }
 
@@ -137,13 +185,142 @@ body {
   }
 }
 
+/* Idle icon animations — scheduled at random in main.js. Each plays once,
+   then the class is removed. Stagger (set via inline animation-delay) turns
+   the per-icon ones into a wave that rolls across the row. */
+@keyframes type-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-55%);
+  }
+  45% {
+    transform: translateY(0);
+  }
+  62% {
+    transform: translateY(-18%);
+  }
+  80% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes type-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.7);
+  }
+}
+
+@keyframes type-flip {
+  from {
+    transform: perspective(220px) rotateY(0);
+  }
+  to {
+    transform: perspective(220px) rotateY(360deg);
+  }
+}
+
+@keyframes type-spin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes type-wobble {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-15deg);
+  }
+  40% {
+    transform: rotate(12deg);
+  }
+  60% {
+    transform: rotate(-8deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes type-swing {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(18deg);
+  }
+  60% {
+    transform: rotate(-12deg);
+  }
+  85% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes type-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.55) rotate(-8deg);
+  }
+  70% {
+    transform: scale(0.92) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.type.anim-jump {
+  animation: type-jump 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+.type.anim-pulse {
+  animation: type-pulse 0.65s ease-in-out both;
+}
+.type.anim-flip {
+  animation: type-flip 0.75s ease-in-out both;
+}
+.type.anim-spin {
+  animation: type-spin 0.8s ease-in-out both;
+}
+.type.anim-wobble {
+  animation: type-wobble 0.7s ease-in-out both;
+}
+.type.anim-swing {
+  transform-origin: top center;
+  animation: type-swing 0.85s ease-in-out both;
+}
+.type.anim-pop {
+  animation: type-pop 0.45s ease-in-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .intro,
+  .sidebar,
+  .content,
+  .panel,
   .palette {
     animation: none;
   }
-  .name,
+  .copyright,
+  .section-link,
   .type {
     transition: none;
+  }
+  .type[class*="anim-"] {
+    animation: none;
   }
 }
