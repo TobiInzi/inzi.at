@@ -1,169 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>tobiinzi</title>
-    <meta
-      name="description"
-      content="Personal site and portfolio of tobiinzi."
-    />
-    <meta name="color-scheme" content="dark" />
-    <meta name="author" content="tobiinzi" />
-    <meta name="theme-color" content="#0b0b0c" />
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Under Construction</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <link rel="icon" href="assets/types/rainbow.png" type="image/png" />
+  html, body {
+    height: 100%;
+    background: #050507;
+    overflow: hidden;
+    cursor: none;
+  }
 
-    <link
-      rel="preload"
-      href="assets/fonts/jetbrains-mono-latin-400.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link rel="stylesheet" href="styles/main.css" />
-  </head>
-  <body>
-    <div class="layout">
-      <aside class="sidebar">
-        <nav class="sections" aria-label="Sections">
-          <button type="button" class="section-link is-current" data-section="1" aria-current="true">Section 1</button>
-          <button type="button" class="section-link" data-section="2">Section 2</button>
-          <button type="button" class="section-link" data-section="3">Section 3</button>
-          <button type="button" class="section-link" data-section="4">Section 4</button>
-        </nav>
-        <p class="copyright">© 2026 tobiinzi</p>
-      </aside>
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
 
-      <main class="content">
-        <section class="panel is-active" data-section="1" tabindex="-1">
-          <h1 class="panel-title">Section 1</h1>
-        </section>
-        <section class="panel" data-section="2" tabindex="-1" hidden>
-          <h1 class="panel-title">Section 2</h1>
-        </section>
-        <section class="panel" data-section="3" tabindex="-1" hidden>
-          <h1 class="panel-title">Section 3</h1>
-        </section>
-        <section class="panel" data-section="4" tabindex="-1" hidden>
-          <h1 class="panel-title">Section 4</h1>
-        </section>
-      </main>
+  #gl {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeCanvas 2.4s ease-out 0.2s forwards;
+  }
 
-      <nav class="palette" aria-label="Accent type">
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #21a34c"
-          data-color="#21a34c"
-          aria-pressed="false"
-          aria-label="Grass accent"
-        >
-          <img src="assets/types/grass.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #ed2f26"
-          data-color="#ed2f26"
-          aria-pressed="false"
-          aria-label="Fire accent"
-        >
-          <img src="assets/types/fire.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #0784e7"
-          data-color="#0784e7"
-          aria-pressed="false"
-          aria-label="Water accent"
-        >
-          <img src="assets/types/water.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #f4e411"
-          data-color="#f4e411"
-          aria-pressed="false"
-          aria-label="Lightning accent"
-        >
-          <img src="assets/types/lightning.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #7c3c8f"
-          data-color="#7c3c8f"
-          aria-pressed="false"
-          aria-label="Psychic accent"
-        >
-          <img src="assets/types/psychic.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #d84f19"
-          data-color="#d84f19"
-          aria-pressed="false"
-          aria-label="Fighting accent"
-        >
-          <img src="assets/types/fighting.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #1f495f"
-          data-color="#1f495f"
-          aria-pressed="false"
-          aria-label="Darkness accent"
-        >
-          <img src="assets/types/darkness.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #9ba0a8"
-          data-color="#9ba0a8"
-          aria-pressed="false"
-          aria-label="Metal accent"
-        >
-          <img src="assets/types/metal.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #ccb001"
-          data-color="#ccb001"
-          aria-pressed="false"
-          aria-label="Dragon accent"
-        >
-          <img src="assets/types/dragon.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #ff70ff"
-          data-color="#ff70ff"
-          aria-pressed="false"
-          aria-label="Fairy accent"
-        >
-          <img src="assets/types/fairy.png" alt="" width="44" height="44" />
-        </button>
-        <button
-          type="button"
-          class="type"
-          style="--type-color: #f0ede2"
-          data-color="#f0ede2"
-          aria-pressed="false"
-          aria-label="Colorless accent"
-        >
-          <img src="assets/types/colorless.png" alt="" width="44" height="44" />
-        </button>
-      </nav>
-    </div>
+  @keyframes fadeCanvas { to { opacity: 1; } }
 
-    <script src="scripts/main.js" type="module"></script>
-  </body>
+  .ui {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+    text-align: center;
+    user-select: none;
+  }
+
+  .title {
+    color: #eef2ff;
+    font-size: clamp(1rem, 3.8vw, 1.7rem);
+    font-weight: 200;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    text-shadow: 0 0 24px rgba(150, 190, 255, 0.45);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: rise 2s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
+  }
+
+  .sub {
+    margin-top: 1.1em;
+    color: rgba(190, 205, 240, 0.5);
+    font-size: clamp(0.62rem, 1.6vw, 0.72rem);
+    font-weight: 300;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: rise 2s cubic-bezier(0.22, 1, 0.36, 1) 1.4s forwards;
+  }
+
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+  #cursor {
+    position: fixed;
+    top: 0; left: 0;
+    width: 11px; height: 11px;
+    z-index: 3;
+    pointer-events: none;
+    background: #eaf2ff;
+    border-radius: 2px;
+    box-shadow: 0 0 10px #cfe0ff, 0 0 22px rgba(150, 190, 255, 0.6);
+    will-change: transform;
+    transform: translate3d(-100px, -100px, 0) rotate(45deg);
+    mix-blend-mode: screen;
+  }
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div id="cursor"></div>
+  <div class="ui">
+    <div class="title">Under Construction</div>
+    <div class="sub">tobiinzi.com</div>
+  </div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const canvas = document.getElementById("gl");
+    const cursor = document.getElementById("cursor");
+    const gl = canvas.getContext("webgl", {
+      antialias: false, alpha: false, depth: false,
+      stencil: false, premultipliedAlpha: false,
+      powerPreference: "high-performance"
+    });
+
+    if (!gl) {
+      document.body.style.background = "#0a0a0a";
+      return; // graceful: just the text on black
+    }
+
+    // ---------- shaders ----------
+    const VERT = `
+      attribute vec2 a;
+      void main() { gl_Position = vec4(a, 0.0, 1.0); }
+    `;
+
+    const FRAG = `
+      precision highp float;
+      uniform vec2  u_res;
+      uniform float u_time;
+      uniform vec2  u_mouse;        // backing-store px, y-up
+      uniform vec3  u_ripples[8];   // x, y (backing px), age(sec); age<0 = off
+
+      vec3 mod289(vec3 x){ return x - floor(x*(1.0/289.0))*289.0; }
+      vec2 mod289(vec2 x){ return x - floor(x*(1.0/289.0))*289.0; }
+      vec3 permute(vec3 x){ return mod289(((x*34.0)+1.0)*x); }
+
+      float snoise(vec2 v){
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                           -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy));
+        vec2 x0 = v - i + dot(i, C.xx);
+        vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
+        vec4 x12 = x0.xyxy + C.xxzz;
+        x12.xy -= i1;
+        i = mod289(i);
+        vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+                                + i.x + vec3(0.0, i1.x, 1.0));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+                                dot(x12.zw,x12.zw)), 0.0);
+        m = m*m; m = m*m;
+        vec3 x  = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h  = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+        vec3 g;
+        g.x  = a0.x * x0.x + h.x * x0.y;
+        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
+
+      float fbm(vec2 p){
+        float v = 0.0, a = 0.5;
+        for (int i = 0; i < 5; i++){ v += a*snoise(p); p *= 2.0; a *= 0.5; }
+        return v;
+      }
+
+      void main(){
+        vec2 frag = gl_FragCoord.xy;
+        // aspect-correct, centered coordinate space
+        vec2 p = (frag - 0.5*u_res) / u_res.y;
+        vec2 m = (u_mouse - 0.5*u_res) / u_res.y;
+        float t = u_time * 0.05;
+
+        // ---- click ripples: distort the field + add light ----
+        vec2 disp = vec2(0.0);
+        float rGlow = 0.0;
+        for (int i = 0; i < 8; i++){
+          vec3 r = u_ripples[i];
+          if (r.z < 0.0) continue;
+          vec2 rp = (r.xy - 0.5*u_res) / u_res.y;
+          vec2 d  = p - rp;
+          float dist = length(d) + 1e-5;
+          float age  = r.z;
+          float env  = exp(-dist*3.5) * exp(-age*1.9);
+          float wave = sin(dist*22.0 - age*11.0) * env;
+          disp  += (d/dist) * wave * 0.07;
+          rGlow += exp(-dist*7.0) * exp(-age*2.6);
+        }
+
+        // ---- mouse lifts the field toward the cursor ----
+        float md = length(p - m) + 1e-5;
+        disp += ((p - m)/md) * 0.045 * exp(-md*3.0);
+
+        // ---- domain-warped fbm: the living nebula ----
+        vec2 q = p + disp;
+        vec2 w = vec2(
+          fbm(q*1.6 + vec2(0.0,  t) + vec2(1.7)),
+          fbm(q*1.6 + vec2(5.2, -t) + vec2(9.2))
+        );
+        float f = fbm(q*2.1 + w*1.9 + t*1.3);
+        float v = f*0.5 + 0.5;
+
+        // ---- color: deep void -> teal -> violet, iridescent in the warp ----
+        vec3 base  = vec3(0.03, 0.04, 0.07);
+        vec3 teal  = vec3(0.16, 0.52, 0.66);
+        vec3 viol  = vec3(0.52, 0.28, 0.78);
+        float warp = clamp(length(w)*0.65, 0.0, 1.0);
+
+        vec3 col = mix(base, teal, smoothstep(0.25, 0.85, v));
+        col = mix(col, viol, smoothstep(0.45, 1.0, warp));
+        col *= pow(v, 1.8) * 1.5;            // crush the lows to near-black
+
+        // bright filaments along the noise zero-crossings
+        float fil = abs(f);
+        col += vec3(0.55, 0.75, 1.0) * (0.05 / (fil + 0.05)) * 0.16;
+
+        // mouse halo + ripple light
+        col += vec3(0.35, 0.55, 0.95) * 0.30 * exp(-md*4.5);
+        col += vec3(0.65, 0.85, 1.0) * rGlow * 0.5;
+
+        // vignette + dither to kill banding
+        col *= 1.0 - 0.45 * dot(p, p);
+        col += (fract(sin(dot(frag, vec2(12.9898,78.233)))*43758.5453) - 0.5) * 0.015;
+
+        gl_FragColor = vec4(max(col, 0.0), 1.0);
+      }
+    `;
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+        console.error(gl.getShaderInfoLog(s));
+      return s;
+    }
+
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    // fullscreen quad
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER,
+      new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "a");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    const U = {
+      res:     gl.getUniformLocation(prog, "u_res"),
+      time:    gl.getUniformLocation(prog, "u_time"),
+      mouse:   gl.getUniformLocation(prog, "u_mouse"),
+      ripples: gl.getUniformLocation(prog, "u_ripples"),
+    };
+
+    // ---------- sizing (internal render scale for performance) ----------
+    const SCALE = 0.72; // render below CSS res; nebula hides the upscale
+    let W = 0, H = 0;   // backing-store pixels
+    function resize() {
+      const cw = window.innerWidth, ch = window.innerHeight;
+      W = Math.max(1, Math.round(cw * SCALE));
+      H = Math.max(1, Math.round(ch * SCALE));
+      canvas.width = W;
+      canvas.height = H;
+      gl.viewport(0, 0, W, H);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // ---------- pointer ----------
+    let mxCss = window.innerWidth / 2, myCss = window.innerHeight / 2;
+    window.addEventListener("pointermove", (e) => {
+      mxCss = e.clientX; myCss = e.clientY;
+      cursor.style.transform =
+        "translate3d(" + e.clientX + "px," + e.clientY +
+        "px,0) translate(-50%,-50%) rotate(45deg)";
+    }, { passive: true });
+
+    // ---------- ripple ring buffer ----------
+    const ripData = new Float32Array(8 * 3).fill(-1); // x,y,age per slot
+    const ripStart = new Float32Array(8).fill(-1);    // start time, -1 = free
+    let ripHead = 0;
+    const RIP_LIFE = 3.0;
+
+    window.addEventListener("pointerdown", (e) => {
+      const i = ripHead;
+      ripHead = (ripHead + 1) % 8;
+      ripData[i*3]   = e.clientX * SCALE;
+      ripData[i*3+1] = (window.innerHeight - e.clientY) * SCALE; // y-up
+      ripStart[i]    = performance.now() / 1000;
+    }, { passive: true });
+
+    // ---------- render loop ----------
+    const start = performance.now();
+    function frame(now) {
+      const time = (now - start) / 1000;
+
+      // mouse uniform in backing px, y-up
+      gl.uniform2f(U.mouse, mxCss * SCALE, (window.innerHeight - myCss) * SCALE);
+      gl.uniform2f(U.res, W, H);
+      gl.uniform1f(U.time, time);
+
+      // age out ripples
+      const nowSec = now / 1000;
+      for (let i = 0; i < 8; i++) {
+        if (ripStart[i] < 0) { ripData[i*3+2] = -1; continue; }
+        const age = nowSec - ripStart[i];
+        if (age > RIP_LIFE) { ripStart[i] = -1; ripData[i*3+2] = -1; }
+        else ripData[i*3+2] = age;
+      }
+      gl.uniform3fv(U.ripples, ripData);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
 </html>

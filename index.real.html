@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tobiinzi</title>
+    <meta
+      name="description"
+      content="Personal site and portfolio of tobiinzi."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="author" content="tobiinzi" />
+    <meta name="theme-color" content="#0b0b0c" />
+
+    <link rel="icon" href="assets/types/rainbow.png" type="image/png" />
+
+    <link
+      rel="preload"
+      href="assets/fonts/jetbrains-mono-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <nav class="sections" aria-label="Sections">
+          <button type="button" class="section-link is-current" data-section="1" aria-current="true">Section 1</button>
+          <button type="button" class="section-link" data-section="2">Section 2</button>
+          <button type="button" class="section-link" data-section="3">Section 3</button>
+          <button type="button" class="section-link" data-section="4">Section 4</button>
+        </nav>
+        <p class="copyright">© 2026 tobiinzi</p>
+      </aside>
+
+      <main class="content">
+        <section class="panel is-active" data-section="1" tabindex="-1">
+          <h1 class="panel-title">Section 1</h1>
+        </section>
+        <section class="panel" data-section="2" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 2</h1>
+        </section>
+        <section class="panel" data-section="3" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 3</h1>
+        </section>
+        <section class="panel" data-section="4" tabindex="-1" hidden>
+          <h1 class="panel-title">Section 4</h1>
+        </section>
+      </main>
+
+      <nav class="palette" aria-label="Accent type">
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #21a34c"
+          data-color="#21a34c"
+          aria-pressed="false"
+          aria-label="Grass accent"
+        >
+          <img src="assets/types/grass.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #ed2f26"
+          data-color="#ed2f26"
+          aria-pressed="false"
+          aria-label="Fire accent"
+        >
+          <img src="assets/types/fire.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #0784e7"
+          data-color="#0784e7"
+          aria-pressed="false"
+          aria-label="Water accent"
+        >
+          <img src="assets/types/water.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #f4e411"
+          data-color="#f4e411"
+          aria-pressed="false"
+          aria-label="Lightning accent"
+        >
+          <img src="assets/types/lightning.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #7c3c8f"
+          data-color="#7c3c8f"
+          aria-pressed="false"
+          aria-label="Psychic accent"
+        >
+          <img src="assets/types/psychic.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #d84f19"
+          data-color="#d84f19"
+          aria-pressed="false"
+          aria-label="Fighting accent"
+        >
+          <img src="assets/types/fighting.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #1f495f"
+          data-color="#1f495f"
+          aria-pressed="false"
+          aria-label="Darkness accent"
+        >
+          <img src="assets/types/darkness.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #9ba0a8"
+          data-color="#9ba0a8"
+          aria-pressed="false"
+          aria-label="Metal accent"
+        >
+          <img src="assets/types/metal.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #ccb001"
+          data-color="#ccb001"
+          aria-pressed="false"
+          aria-label="Dragon accent"
+        >
+          <img src="assets/types/dragon.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #ff70ff"
+          data-color="#ff70ff"
+          aria-pressed="false"
+          aria-label="Fairy accent"
+        >
+          <img src="assets/types/fairy.png" alt="" width="44" height="44" />
+        </button>
+        <button
+          type="button"
+          class="type"
+          style="--type-color: #f0ede2"
+          data-color="#f0ede2"
+          aria-pressed="false"
+          aria-label="Colorless accent"
+        >
+          <img src="assets/types/colorless.png" alt="" width="44" height="44" />
+        </button>
+      </nav>
+    </div>
+
+    <script src="scripts/main.js" type="module"></script>
+  </body>
+</html>
