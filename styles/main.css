@@ -78,6 +78,7 @@ body {
 /* Type palette */
 .palette {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
   animation: rise 0.7s ease 0.1s both;
