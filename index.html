@@ -1,315 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Under Construction</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tobiinzi</title>
+    <meta
+      name="description"
+      content="Personal site and portfolio of tobiinzi."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="author" content="tobiinzi" />
+    <meta name="theme-color" content="#0b0b0c" />
 
-  html, body {
-    height: 100%;
-    background: #050507;
-    overflow: hidden;
-    cursor: none;
-  }
+    <link rel="icon" href="assets/types/rainbow.png" type="image/png" />
 
-  body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  }
+    <link
+      rel="preload"
+      href="assets/fonts/jetbrains-mono-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sections" role="tablist" aria-label="Sections">
+          <button type="button" class="section-link" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0" data-section="1">Home</button>
+          <button type="button" class="section-link" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1" data-section="2">Me</button>
+        </div>
+        <p class="copyright">© 2026 tobiinzi</p>
+      </aside>
 
-  #gl {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 1;
-    opacity: 0;
-    animation: fadeCanvas 2.4s ease-out 0.2s forwards;
-  }
+      <main class="content">
+        <section class="panel is-active" role="tabpanel" id="panel-1" aria-labelledby="tab-1" data-section="1" tabindex="0">
+          <p>
+            Placeholder copy for the first section. This area holds the main
+            content and stays a comfortable reading width in the middle of the
+            screen, so the space on either side grows as the display gets wider.
+          </p>
+          <div class="palette" role="group" aria-label="Accent color">
+            <button type="button" class="type" style="--type-color: #009e59" aria-pressed="false" aria-label="Grass accent"><img src="assets/types/grass.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #d8453b" aria-pressed="false" aria-label="Fire accent"><img src="assets/types/fire.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #00ade8" aria-pressed="false" aria-label="Water accent"><img src="assets/types/water.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #fedf00" aria-pressed="false" aria-label="Lightning accent"><img src="assets/types/lightning.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #9a619b" aria-pressed="false" aria-label="Psychic accent"><img src="assets/types/psychic.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #cf7a30" aria-pressed="false" aria-label="Fighting accent"><img src="assets/types/fighting.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #007087" aria-pressed="false" aria-label="Darkness accent"><img src="assets/types/darkness.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #c6cabb" aria-pressed="false" aria-label="Metal accent"><img src="assets/types/metal.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #b1b34f" aria-pressed="false" aria-label="Dragon accent"><img src="assets/types/dragon.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #df5f8b" aria-pressed="false" aria-label="Fairy accent"><img src="assets/types/fairy.png" alt="" width="44" height="44" /></button>
+            <button type="button" class="type" style="--type-color: #e8e9e8" aria-pressed="false" aria-label="Colorless accent"><img src="assets/types/colorless.png" alt="" width="44" height="44" /></button>
+          </div>
+        </section>
+        <section class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" data-section="2" tabindex="0" hidden>
+          <p>
+            Placeholder copy for the second section. Real text will replace this
+            later; for now it simply demonstrates how a paragraph flows and where
+            scrolling kicks in once a section has enough to say.
+          </p>
+        </section>
+      </main>
 
-  @keyframes fadeCanvas { to { opacity: 1; } }
+      <div class="rail">
+        <nav class="socials" aria-label="Social links">
+          <a class="social" href="https://steamcommunity.com/id/tobiinzi" target="_blank" rel="noopener" aria-label="Steam">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658a3.39 3.39 0 011.912-.59l2.861-4.142v-.06a4.524 4.524 0 119.048.05 4.526 4.526 0 01-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159a3.395 3.395 0 01-6.721.669L.436 15.27A12 12 0 1011.979 0zM7.54 18.21l-1.473-.61a2.553 2.553 0 001.314 1.25 2.548 2.548 0 003.337-1.375 2.524 2.524 0 00.005-1.95 2.52 2.52 0 00-1.378-1.382 2.546 2.546 0 00-1.876-.03l1.523.63a1.881 1.881 0 11-1.445 3.467zm11.415-9.303a3.014 3.014 0 11-6.03.005 3.014 3.014 0 016.03-.005zm-5.273-.005a2.265 2.265 0 104.531.005 2.265 2.265 0 00-4.531-.005z"/></svg>
+          </a>
+          <a class="social" href="https://www.linkedin.com/in/tobiasinzinger" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 110-4.124 2.062 2.062 0 010 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
+          </a>
+          <a class="social" href="https://github.com/TobiInzi" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.014 2.898-.014 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+          <a class="social" href="https://discord.com/users/307223294799773716" target="_blank" rel="noopener" aria-label="Discord">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
+          </a>
+        </nav>
+      </div>
+    </div>
 
-  .ui {
-    position: relative;
-    z-index: 2;
-    pointer-events: none;
-    text-align: center;
-    user-select: none;
-  }
-
-  .title {
-    color: #eef2ff;
-    font-size: clamp(1rem, 3.8vw, 1.7rem);
-    font-weight: 200;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    text-shadow: 0 0 24px rgba(150, 190, 255, 0.45);
-    opacity: 0;
-    transform: translateY(16px);
-    animation: rise 2s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
-  }
-
-  .sub {
-    margin-top: 1.1em;
-    color: rgba(190, 205, 240, 0.5);
-    font-size: clamp(0.62rem, 1.6vw, 0.72rem);
-    font-weight: 300;
-    letter-spacing: 0.5em;
-    text-transform: uppercase;
-    opacity: 0;
-    animation: rise 2s cubic-bezier(0.22, 1, 0.36, 1) 1.4s forwards;
-  }
-
-  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
-
-  #cursor {
-    position: fixed;
-    top: 0; left: 0;
-    width: 11px; height: 11px;
-    z-index: 3;
-    pointer-events: none;
-    background: #eaf2ff;
-    border-radius: 2px;
-    box-shadow: 0 0 10px #cfe0ff, 0 0 22px rgba(150, 190, 255, 0.6);
-    will-change: transform;
-    transform: translate3d(-100px, -100px, 0) rotate(45deg);
-    mix-blend-mode: screen;
-  }
-</style>
-</head>
-<body>
-  <canvas id="gl"></canvas>
-  <div id="cursor"></div>
-  <div class="ui">
-    <div class="title">Under Construction</div>
-    <div class="sub">tobiinzi.com</div>
-  </div>
-
-  <script>
-  (() => {
-    "use strict";
-
-    const canvas = document.getElementById("gl");
-    const cursor = document.getElementById("cursor");
-    const gl = canvas.getContext("webgl", {
-      antialias: false, alpha: false, depth: false,
-      stencil: false, premultipliedAlpha: false,
-      powerPreference: "high-performance"
-    });
-
-    if (!gl) {
-      document.body.style.background = "#0a0a0a";
-      return; // graceful: just the text on black
-    }
-
-    // ---------- shaders ----------
-    const VERT = `
-      attribute vec2 a;
-      void main() { gl_Position = vec4(a, 0.0, 1.0); }
-    `;
-
-    const FRAG = `
-      precision highp float;
-      uniform vec2  u_res;
-      uniform float u_time;
-      uniform vec2  u_mouse;        // backing-store px, y-up
-      uniform vec3  u_ripples[8];   // x, y (backing px), age(sec); age<0 = off
-
-      vec3 mod289(vec3 x){ return x - floor(x*(1.0/289.0))*289.0; }
-      vec2 mod289(vec2 x){ return x - floor(x*(1.0/289.0))*289.0; }
-      vec3 permute(vec3 x){ return mod289(((x*34.0)+1.0)*x); }
-
-      float snoise(vec2 v){
-        const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-                           -0.577350269189626, 0.024390243902439);
-        vec2 i  = floor(v + dot(v, C.yy));
-        vec2 x0 = v - i + dot(i, C.xx);
-        vec2 i1 = (x0.x > x0.y) ? vec2(1.0,0.0) : vec2(0.0,1.0);
-        vec4 x12 = x0.xyxy + C.xxzz;
-        x12.xy -= i1;
-        i = mod289(i);
-        vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
-                                + i.x + vec3(0.0, i1.x, 1.0));
-        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
-                                dot(x12.zw,x12.zw)), 0.0);
-        m = m*m; m = m*m;
-        vec3 x  = 2.0 * fract(p * C.www) - 1.0;
-        vec3 h  = abs(x) - 0.5;
-        vec3 ox = floor(x + 0.5);
-        vec3 a0 = x - ox;
-        m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
-        vec3 g;
-        g.x  = a0.x * x0.x + h.x * x0.y;
-        g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-        return 130.0 * dot(m, g);
-      }
-
-      float fbm(vec2 p){
-        float v = 0.0, a = 0.5;
-        for (int i = 0; i < 5; i++){ v += a*snoise(p); p *= 2.0; a *= 0.5; }
-        return v;
-      }
-
-      void main(){
-        vec2 frag = gl_FragCoord.xy;
-        // aspect-correct, centered coordinate space
-        vec2 p = (frag - 0.5*u_res) / u_res.y;
-        vec2 m = (u_mouse - 0.5*u_res) / u_res.y;
-        float t = u_time * 0.05;
-
-        // ---- click ripples: distort the field + add light ----
-        vec2 disp = vec2(0.0);
-        float rGlow = 0.0;
-        for (int i = 0; i < 8; i++){
-          vec3 r = u_ripples[i];
-          if (r.z < 0.0) continue;
-          vec2 rp = (r.xy - 0.5*u_res) / u_res.y;
-          vec2 d  = p - rp;
-          float dist = length(d) + 1e-5;
-          float age  = r.z;
-          float env  = exp(-dist*3.5) * exp(-age*1.9);
-          float wave = sin(dist*22.0 - age*11.0) * env;
-          disp  += (d/dist) * wave * 0.07;
-          rGlow += exp(-dist*7.0) * exp(-age*2.6);
-        }
-
-        // ---- mouse lifts the field toward the cursor ----
-        float md = length(p - m) + 1e-5;
-        disp += ((p - m)/md) * 0.045 * exp(-md*3.0);
-
-        // ---- domain-warped fbm: the living nebula ----
-        vec2 q = p + disp;
-        vec2 w = vec2(
-          fbm(q*1.6 + vec2(0.0,  t) + vec2(1.7)),
-          fbm(q*1.6 + vec2(5.2, -t) + vec2(9.2))
-        );
-        float f = fbm(q*2.1 + w*1.9 + t*1.3);
-        float v = f*0.5 + 0.5;
-
-        // ---- color: deep void -> teal -> violet, iridescent in the warp ----
-        vec3 base  = vec3(0.03, 0.04, 0.07);
-        vec3 teal  = vec3(0.16, 0.52, 0.66);
-        vec3 viol  = vec3(0.52, 0.28, 0.78);
-        float warp = clamp(length(w)*0.65, 0.0, 1.0);
-
-        vec3 col = mix(base, teal, smoothstep(0.25, 0.85, v));
-        col = mix(col, viol, smoothstep(0.45, 1.0, warp));
-        col *= pow(v, 1.8) * 1.5;            // crush the lows to near-black
-
-        // bright filaments along the noise zero-crossings
-        float fil = abs(f);
-        col += vec3(0.55, 0.75, 1.0) * (0.05 / (fil + 0.05)) * 0.16;
-
-        // mouse halo + ripple light
-        col += vec3(0.35, 0.55, 0.95) * 0.30 * exp(-md*4.5);
-        col += vec3(0.65, 0.85, 1.0) * rGlow * 0.5;
-
-        // vignette + dither to kill banding
-        col *= 1.0 - 0.45 * dot(p, p);
-        col += (fract(sin(dot(frag, vec2(12.9898,78.233)))*43758.5453) - 0.5) * 0.015;
-
-        gl_FragColor = vec4(max(col, 0.0), 1.0);
-      }
-    `;
-
-    function compile(type, src) {
-      const s = gl.createShader(type);
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-        console.error(gl.getShaderInfoLog(s));
-      return s;
-    }
-
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
-    gl.useProgram(prog);
-
-    // fullscreen quad
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER,
-      new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, "a");
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-    const U = {
-      res:     gl.getUniformLocation(prog, "u_res"),
-      time:    gl.getUniformLocation(prog, "u_time"),
-      mouse:   gl.getUniformLocation(prog, "u_mouse"),
-      ripples: gl.getUniformLocation(prog, "u_ripples"),
-    };
-
-    // ---------- sizing (internal render scale for performance) ----------
-    const SCALE = 0.72; // render below CSS res; nebula hides the upscale
-    let W = 0, H = 0;   // backing-store pixels
-    function resize() {
-      const cw = window.innerWidth, ch = window.innerHeight;
-      W = Math.max(1, Math.round(cw * SCALE));
-      H = Math.max(1, Math.round(ch * SCALE));
-      canvas.width = W;
-      canvas.height = H;
-      gl.viewport(0, 0, W, H);
-    }
-    resize();
-    window.addEventListener("resize", resize);
-
-    // ---------- pointer ----------
-    let mxCss = window.innerWidth / 2, myCss = window.innerHeight / 2;
-    window.addEventListener("pointermove", (e) => {
-      mxCss = e.clientX; myCss = e.clientY;
-      cursor.style.transform =
-        "translate3d(" + e.clientX + "px," + e.clientY +
-        "px,0) translate(-50%,-50%) rotate(45deg)";
-    }, { passive: true });
-
-    // ---------- ripple ring buffer ----------
-    const ripData = new Float32Array(8 * 3).fill(-1); // x,y,age per slot
-    const ripStart = new Float32Array(8).fill(-1);    // start time, -1 = free
-    let ripHead = 0;
-    const RIP_LIFE = 3.0;
-
-    window.addEventListener("pointerdown", (e) => {
-      const i = ripHead;
-      ripHead = (ripHead + 1) % 8;
-      ripData[i*3]   = e.clientX * SCALE;
-      ripData[i*3+1] = (window.innerHeight - e.clientY) * SCALE; // y-up
-      ripStart[i]    = performance.now() / 1000;
-    }, { passive: true });
-
-    // ---------- render loop ----------
-    const start = performance.now();
-    function frame(now) {
-      const time = (now - start) / 1000;
-
-      // mouse uniform in backing px, y-up
-      gl.uniform2f(U.mouse, mxCss * SCALE, (window.innerHeight - myCss) * SCALE);
-      gl.uniform2f(U.res, W, H);
-      gl.uniform1f(U.time, time);
-
-      // age out ripples
-      const nowSec = now / 1000;
-      for (let i = 0; i < 8; i++) {
-        if (ripStart[i] < 0) { ripData[i*3+2] = -1; continue; }
-        const age = nowSec - ripStart[i];
-        if (age > RIP_LIFE) { ripStart[i] = -1; ripData[i*3+2] = -1; }
-        else ripData[i*3+2] = age;
-      }
-      gl.uniform3fv(U.ripples, ripData);
-
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  })();
-  </script>
-</body>
+    <script src="scripts/main.js" type="module"></script>
+  </body>
 </html>

@@ -23,6 +23,14 @@
   box-sizing: border-box;
 }
 
+/* Freeze all animations while the tab is hidden/minimized. */
+body.frozen *,
+body.frozen *::before,
+body.frozen *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -30,8 +38,10 @@ body {
 }
 
 body {
+  position: relative;
   min-height: 100vh;
-  background: var(--bg);
+  min-height: 100dvh;
+  background-color: var(--bg);
   color: var(--fg);
   font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas,
     monospace;
@@ -39,6 +49,20 @@ body {
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Page-wide background nebula. A single fixed WebGL canvas sits behind every-
+   thing; scripts/main.js renders a slow, domain-warped noise field onto it and
+   tints it to the selected type color. The body's --bg shows through if WebGL
+   is unavailable. */
+#bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 ::selection {
@@ -49,8 +73,11 @@ body {
 /* Three-part layout: left pillar | scrollable main | right icon pillar */
 .layout {
   height: 100vh;
+  height: 100dvh;
+  max-width: 90rem;
+  margin-inline: auto;
   display: grid;
-  grid-template-columns: clamp(9rem, 18vw, 14rem) 1fr clamp(3.5rem, 6vw, 4.5rem);
+  grid-template-columns: 20% 60% 20%;
   overflow: hidden;
 }
 
@@ -58,21 +85,22 @@ body {
 .sidebar {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 2rem;
-  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2vw, 1.75rem);
+  padding: 12vh clamp(1rem, 2vw, 1.75rem) clamp(1.5rem, 3vw, 2.5rem);
   animation: rise 0.7s ease both;
 }
 
 .sections {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  align-items: flex-start;
+  gap: 1.75rem;
+  margin-bottom: auto;
 }
 
 .section-link {
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   border: none;
   background: none;
   padding: 0;
@@ -90,13 +118,13 @@ body {
   outline: none;
 }
 
-.section-link.is-current {
+.section-link[aria-selected="true"] {
   color: var(--fg);
 }
 
 .copyright {
   margin: 0;
-  font-size: 0.85em;
+  font-size: 0.7em;
   color: var(--muted);
   transition: color 0.35s ease;
 }
@@ -108,11 +136,22 @@ body {
 /* Main content (scrolls when it overflows) */
 .content {
   overflow-y: auto;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
+  padding: 12vh clamp(1.5rem, 4vw, 3.5rem);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge */
+}
+
+.content::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .panel {
-  max-width: 46rem;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* The visible panel rises in — re-triggers each time a section is shown. */
+.panel.is-active {
   animation: rise 0.5s ease both;
 }
 
@@ -120,28 +159,73 @@ body {
   display: none;
 }
 
-.panel-title {
+.panel p {
   margin: 0;
-  font-weight: 400;
-  font-size: clamp(1.4rem, 1rem + 1.5vw, 2rem);
+  color: var(--muted);
 }
 
-/* Right pillar: icons stacked top-to-bottom, steady */
-.palette {
+/* Right pillar: social links bottom-right */
+.rail {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.9rem;
-  margin: 0;
-  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  overflow: visible;
+}
+
+.palette {
+  --r: clamp(3.5rem, 4.8vw, 4.5rem);
+  position: relative;
+  width: calc(var(--r) * 2 + 3rem);
+  height: calc(var(--r) * 2 + 3rem);
+  margin: clamp(1.5rem, 4vh, 2.5rem) auto 0;
   overflow: visible;
   -webkit-user-select: none;
   user-select: none;
-  animation: rise 0.7s ease 0.1s both;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.palette.ready {
+  opacity: 1;
+  pointer-events: auto;
+  animation: orbit 90s linear infinite;
+}
+
+.socials {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.1rem;
+  color: var(--muted);
+  transition: color 0.35s ease;
+}
+
+.has-accent .socials {
+  color: var(--accent);
+}
+
+.social {
+  display: flex;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.social:hover {
+  transform: scale(1.15);
+}
+
+.social:focus-visible {
+  outline: none;
+  transform: scale(1.15);
 }
 
 .type {
-  --size: 1.25rem;
+  --size: 1.3rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: var(--size);
   height: var(--size);
   padding: 0;
@@ -151,7 +235,17 @@ body {
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.2);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s ease, box-shadow 0.2s ease;
+}
+
+.palette.ready .type {
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(var(--a, 0deg))
+    translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--a, 0deg)));
+  transition-delay: var(--d, 0ms);
 }
 
 .type img {
@@ -159,10 +253,7 @@ body {
   height: 100%;
   display: block;
   pointer-events: none;
-}
-
-.type:hover {
-  transform: scale(1.1);
+  animation: orbit 90s linear infinite reverse;
 }
 
 .type:focus-visible {
@@ -170,8 +261,9 @@ body {
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--type-color);
 }
 
-.type.is-active {
-  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--type-color);
+.palette.ready .type.is-active {
+  transform: translate(-50%, -50%) scale(1.6);
+  z-index: 2;
 }
 
 @keyframes rise {
@@ -185,142 +277,70 @@ body {
   }
 }
 
-/* Idle icon animations — scheduled at random in main.js. Each plays once,
-   then the class is removed. Stagger (set via inline animation-delay) turns
-   the per-icon ones into a wave that rolls across the row. */
-@keyframes type-jump {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  25% {
-    transform: translateY(-55%);
-  }
-  45% {
-    transform: translateY(0);
-  }
-  62% {
-    transform: translateY(-18%);
-  }
-  80% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes type-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.7);
-  }
-}
-
-@keyframes type-flip {
-  from {
-    transform: perspective(220px) rotateY(0);
-  }
-  to {
-    transform: perspective(220px) rotateY(360deg);
-  }
-}
-
-@keyframes type-spin {
-  from {
-    transform: rotate(0);
-  }
+@keyframes orbit {
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes type-wobble {
-  0%,
-  100% {
-    transform: rotate(0);
+/* Mobile: collapse the three columns into a single stack — the section tabs
+   across the top, the scrollable content, then the social links beneath it. */
+@media (max-width: 48rem) {
+  .layout {
+    display: flex;
+    flex-direction: column;
   }
-  20% {
-    transform: rotate(-15deg);
-  }
-  40% {
-    transform: rotate(12deg);
-  }
-  60% {
-    transform: rotate(-8deg);
-  }
-  80% {
-    transform: rotate(4deg);
-  }
-}
 
-@keyframes type-swing {
-  0%,
-  100% {
-    transform: rotate(0);
+  .sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 1rem clamp(1rem, 4vw, 1.5rem);
   }
-  30% {
-    transform: rotate(18deg);
-  }
-  60% {
-    transform: rotate(-12deg);
-  }
-  85% {
-    transform: rotate(5deg);
-  }
-}
 
-@keyframes type-pop {
-  0% {
-    transform: scale(1);
+  .sections {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    margin-bottom: 0;
   }
-  35% {
-    transform: scale(1.55) rotate(-8deg);
-  }
-  70% {
-    transform: scale(0.92) rotate(4deg);
-  }
-  100% {
-    transform: scale(1) rotate(0);
-  }
-}
 
-.type.anim-jump {
-  animation: type-jump 0.6s cubic-bezier(0.3, 0.7, 0.4, 1) both;
-}
-.type.anim-pulse {
-  animation: type-pulse 0.65s ease-in-out both;
-}
-.type.anim-flip {
-  animation: type-flip 0.75s ease-in-out both;
-}
-.type.anim-spin {
-  animation: type-spin 0.8s ease-in-out both;
-}
-.type.anim-wobble {
-  animation: type-wobble 0.7s ease-in-out both;
-}
-.type.anim-swing {
-  transform-origin: top center;
-  animation: type-swing 0.85s ease-in-out both;
-}
-.type.anim-pop {
-  animation: type-pop 0.45s ease-in-out both;
+  .copyright {
+    display: none;
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+    padding: 1.5rem clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .rail {
+    align-items: center;
+    justify-content: center;
+    padding: 1rem clamp(1rem, 4vw, 1.5rem);
+  }
+
+  .socials {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
-  .content,
-  .panel,
-  .palette {
+  .panel.is-active,
+  .palette,
+  .type img {
     animation: none;
   }
   .copyright,
+  .socials,
+  .social,
   .section-link,
   .type {
     transition: none;
-  }
-  .type[class*="anim-"] {
-    animation: none;
   }
 }
