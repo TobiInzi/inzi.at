@@ -204,9 +204,9 @@ export function initCursor(reducedMotion = false) {
     }
 
     // ring
-    rx += (x - rx) * 0.25;
-    ry += (y - ry) * 0.25;
-    scale += (targetScale - scale) * 0.2;
+    rx += (x - rx) * 0.13;
+    ry += (y - ry) * 0.13;
+    scale += (targetScale - scale) * 0.16;
     ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%) scale(${scale})`;
 
     // click choreographies

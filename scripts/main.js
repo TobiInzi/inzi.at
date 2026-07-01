@@ -36,8 +36,9 @@ if (!reducedMotion && content && contentInner) {
       lenis = new Lenis({
         wrapper: content,
         content: contentInner,
-        lerp: 0.075, // lower = smoother, slower-settling glide
-        wheelMultiplier: 0.9,
+        lerp: 0.052, // lower = smoother, slower-settling glide
+        wheelMultiplier: 0.62,
+        touchMultiplier: 0.8,
       });
       const raf = (time) => {
         lenis.raf(time);
@@ -115,6 +116,7 @@ initTabs((id) => {
       if (orb) orb.resize();
     }
     field.startField();
+    journey.refresh();
   } else {
     field.stopField();
     journey.refresh();

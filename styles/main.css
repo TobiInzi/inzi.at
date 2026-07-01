@@ -82,7 +82,7 @@ body {
   z-index: 100;
   width: 38px;
   height: 38px;
-  border: 1.5px solid var(--accent);
+  border: 2.25px solid var(--accent);
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
@@ -219,108 +219,126 @@ body {
   margin-top: 1em;
 }
 
-/* Me section: a pinned "Index" scroller. `.journey` is the tall scroll track,
-   `.journey-stage` is the sticky viewport; journey.js cross-dissolves one
-   `.scene` (eyebrow date / title / paragraph + a ghosted index numeral) into the
-   next as you scroll, with a slim progress spine down the side. Smoothed by Lenis
-   (main.js). The taller `.journey` is, the slower the scroll. */
+/* Me section: quiet scroll narrative. It opens on the shader with only a small
+   scroll cue; after that, sticky text crossfades while tiny progress elements
+   keep moving so the page never feels stuck. */
 .me-panel {
   width: 100%;
 }
 
 .journey {
   position: relative;
-  height: 1600vh;
+  min-height: 2200vh;
+  margin-block: -12vh;
 }
 
 .journey-stage {
   position: sticky;
   top: 0;
-  height: 76vh;
-  min-height: 30rem;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 34rem;
   overflow: hidden;
-  perspective: 1400px; /* depth for the 3D flip scene */
 }
 
-/* The centred column the rail + scenes share. */
 .journey-inner {
   position: relative;
   height: 100%;
-  width: min(90%, 40rem);
+  width: min(100%, 52rem);
   margin-inline: auto;
 }
 
-/* Progress spine: a faint track whose top portion fills with the accent colour
-   as you advance, with a dot riding the boundary (both positioned by JS). */
-.journey-rail {
-  position: absolute;
-  left: 0;
-  top: 16%;
-  bottom: 16%;
-  width: 2px;
-  border-radius: 2px;
-  background: rgba(138, 138, 143, 0.22);
-}
-
-.journey-rail-fill {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--accent-text);
-  transform-origin: top;
-  transform: scaleY(0);
-  transition: background 0.35s ease;
-}
-
-.journey-rail-dot {
+.journey-prompt {
   position: absolute;
   left: 50%;
-  top: 0;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent-text);
-  transform: translate(-50%, 0);
-  transition: background 0.35s ease;
+  bottom: 18vh;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+  opacity: 1;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  will-change: opacity, transform;
+  pointer-events: none;
 }
 
-/* Each entry fills the stage and centres its content; journey.js drives the
-   per-frame opacity / drift / blur, so these get NO transition of their own. */
+.journey-prompt.is-hidden {
+  opacity: 0;
+  transform: translate(-50%, -0.65rem);
+}
+
+.journey-prompt-mark {
+  width: 2.6rem;
+  height: 1px;
+  background: var(--accent-text);
+  transition: background 0.35s ease;
+  animation: promptPulse 1.6s ease-in-out infinite;
+}
+
+.journey-scenes {
+  position: absolute;
+  inset: 0;
+}
+
 .scene {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-left: 2.75rem;
+  max-width: 40rem;
+  padding: 0 clamp(1.25rem, 4vw, 3rem);
   opacity: 0;
+  transform: translate3d(0, 0.75rem, 0);
+  filter: blur(0.22rem);
   pointer-events: none;
-  will-change: transform, opacity, filter;
+  transition: opacity 0.36s ease, transform 0.36s ease, filter 0.36s ease;
+  will-change: opacity, transform, filter;
 }
 
 .scene.is-active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  filter: blur(0);
   pointer-events: auto;
 }
 
-/* Oversized ghost numeral behind the copy — the editorial index marker. */
-.journey .scene-num {
-  position: absolute;
-  top: 6%;
-  right: 0;
-  margin: 0;
-  font-size: clamp(7rem, 22vh, 15rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: var(--fg);
-  opacity: 0.05;
+.journey-progress {
+  position: fixed;
+  left: 50%;
+  bottom: 5vh;
+  width: min(48vw, 22rem);
+  height: 1px;
+  z-index: 20;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.36s ease, transform 0.36s ease;
+  will-change: opacity, transform;
   pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
+}
+
+.journey-progress.is-visible {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+.journey-progress-line {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-text);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: background 0.35s ease;
+  will-change: transform;
 }
 
 .journey .scene-date {
-  margin: 0 0 0.9rem;
-  font-size: 0.78rem;
+  margin: 0 0 1rem;
+  font-size: 0.72rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--accent-text);
@@ -328,19 +346,56 @@ body {
 }
 
 .journey .scene-title {
-  margin: 0 0 1rem;
+  margin: 0 0 1.25rem;
   font-weight: 400;
-  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem);
-  line-height: 1.15;
+  font-size: clamp(2.8rem, 1.7rem + 5vw, 6rem);
+  line-height: 0.98;
   color: var(--fg);
 }
 
 .journey .scene-text {
   margin: 0;
-  max-width: 30rem;
+  max-width: 32rem;
   color: var(--muted);
-  font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.05rem);
-  line-height: 1.7;
+  font-size: clamp(0.95rem, 0.88rem + 0.35vw, 1.08rem);
+  line-height: 1.75;
+}
+
+@media (max-width: 760px) {
+  .journey {
+    min-height: 2000vh;
+  }
+
+  .journey-stage {
+    min-height: 32rem;
+  }
+
+  .scene {
+    padding-inline: 0.75rem;
+  }
+
+  .journey .scene-title {
+    font-size: clamp(2.4rem, 14vw, 4.6rem);
+  }
+
+  .journey-progress {
+    bottom: 5vh;
+    width: min(64vw, 16rem);
+  }
+}
+
+@keyframes promptPulse {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scaleX(0.45);
+    transform-origin: left;
+  }
+  50% {
+    opacity: 0.9;
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
 /* Highlighted words in the body copy: the basic muted text color when neutral
@@ -671,7 +726,7 @@ body {
   }
 
   .journey {
-    height: 1400vh;
+    min-height: 1800vh;
   }
 
   .journey-stage {
@@ -680,15 +735,11 @@ body {
   }
 
   .journey-inner {
-    width: min(88%, 30rem);
+    width: min(92%, 34rem);
   }
 
   .scene {
-    padding-left: 2.25rem;
-  }
-
-  .journey .scene-num {
-    font-size: clamp(6rem, 26vh, 11rem);
+    padding-inline: 0;
   }
 }
 
@@ -708,8 +759,10 @@ body {
   .section-link,
   .accent,
   .type,
-  .journey-rail-fill,
-  .journey-rail-dot,
+  .journey-prompt-mark,
+  .journey-progress,
+  .journey-progress-line,
+  .scene,
   .scene-date {
     transition: none;
   }
