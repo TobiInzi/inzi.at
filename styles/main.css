@@ -119,7 +119,8 @@ body {
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  align-items: flex-start;
+  gap: 1.75rem; /* matches the inter-tab gap, so Contact sits in the same rhythm */
   padding: 12vh clamp(1rem, 2vw, 1.75rem) clamp(1.5rem, 3vw, 2.5rem);
   animation: rise 0.7s ease both;
 }
@@ -129,7 +130,6 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: 1.75rem;
-  margin-bottom: auto;
 }
 
 .section-link {
@@ -351,14 +351,48 @@ body {
   transition: color 0.35s ease;
 }
 
-/* Right pillar: social links bottom-right */
-.rail {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: flex-end;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  overflow: visible;
+/* The Contact control: styled like a section link but it triggers the social
+   reveal (scripts/contact.js) rather than switching panels. Its label fades as the
+   text becomes the seed orb. */
+.contact-link {
+  transition: color 0.2s ease, opacity 0.45s ease;
+}
+.contact-link.is-morphing {
+  opacity: 0;
+}
+
+/* Contact reveal orbs (scripts/contact.js): the seed (button -> orb) and the five
+   that arc to the corner, plus their fading trail. JS drives every transform; CSS
+   only handles the seed's scale-up pop and the fade-outs. Tinted by --accent, so
+   they match the current selection. */
+.contact-orb {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0.55rem 0.1rem var(--accent);
+  pointer-events: none;
+  z-index: 60;
+  transition: opacity 0.32s ease;
+  will-change: transform, opacity;
+}
+.contact-seed {
+  transition: transform 0.65s cubic-bezier(0.18, 0.9, 0.28, 1.45), opacity 0.32s ease;
+}
+.contact-trail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+  z-index: 59;
+  will-change: transform, opacity;
 }
 
 /* Floating field: it spans the lower content area, but JS keeps the drifting
@@ -467,7 +501,15 @@ body {
   pointer-events: auto;
 }
 
+/* Social links: pinned to the true lower-right corner of the viewport (mirroring
+   the copyright), so they hug the screen edge on any width. Hidden until the Contact
+   control flies them in (scripts/contact.js); the noscript block shows them without
+   JS. */
 .socials {
+  position: fixed;
+  right: clamp(0.7rem, 1.6vw, 1.2rem);
+  bottom: clamp(0.6rem, 1.6vh, 1rem);
+  z-index: 5;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -479,6 +521,11 @@ body {
 .social {
   display: flex;
   color: inherit;
+  opacity: 0; /* the Contact fly-in (or the noscript fallback) reveals them */
+  transition: opacity 0.5s ease;
+  /* Each icon bobs on its own slow wave (staggered by the nth-child delays below).
+     It runs from load on the still-hidden icons, so a landed icon is already mid-
+     drift and never snaps into motion when it fades in. */
   animation: social-wave 5s ease-in-out infinite;
 }
 
@@ -621,17 +668,6 @@ body {
     flex: 1;
     min-height: 0;
     padding: 1.5rem clamp(1rem, 4vw, 1.5rem);
-  }
-
-  .rail {
-    align-items: center;
-    justify-content: center;
-    padding: 1rem clamp(1rem, 4vw, 1.5rem);
-  }
-
-  .socials {
-    flex-direction: row;
-    gap: 1.5rem;
   }
 
   .journey {

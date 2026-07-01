@@ -7,6 +7,7 @@ import { initField } from "./field.js";
 import { initTabs } from "./tabs.js";
 import { initJourneyPath } from "./journey.js";
 import { initCursor } from "./cursor.js";
+import { initContact } from "./contact.js";
 
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const igniter = document.querySelector(".igniter");
@@ -18,6 +19,7 @@ const nebula = initNebula(reducedMotion);
 const field = initField({ nebula, reducedMotion });
 const journey = initJourneyPath(reducedMotion);
 initCursor(reducedMotion); // ring follower + click flash/burst, tinted by --accent
+initContact(reducedMotion); // Contact control flies the social icons into the corner
 
 let orb = null; // the WebGL vortex on the igniter; set once its canvas has layout
 let lenis = null; // smooth-scroll instance; stays null under reduced motion / no CDN

@@ -26,6 +26,15 @@
       crossorigin
     />
     <link rel="stylesheet" href="styles/main.css" />
+
+    <!-- Without JS the fly-in can't run, so show the social links outright and hide
+         the Contact control that would otherwise reveal them. -->
+    <noscript>
+      <style>
+        .social { opacity: 1; }
+        .contact-link { display: none; }
+      </style>
+    </noscript>
   </head>
   <body>
     <canvas id="bg" aria-hidden="true"></canvas>
@@ -35,6 +44,9 @@
           <button type="button" class="section-link" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true" tabindex="0" data-section="1">Home</button>
           <button type="button" class="section-link" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1" data-section="2">Me</button>
         </div>
+        <!-- Not a tab: reveals the social links (scripts/contact.js). Hidden without
+             JS via the noscript block, which shows the links directly instead. -->
+        <button type="button" class="section-link contact-link" aria-label="Reveal contact links">Contact</button>
       </aside>
 
       <main class="content">
@@ -116,9 +128,9 @@
         </section>
         </div>
       </main>
+    </div>
 
-      <div class="rail">
-        <nav class="socials" aria-label="Social links">
+    <nav class="socials" aria-label="Social links">
           <a class="social" href="https://www.linkedin.com/in/tobiasinzinger" target="_blank" rel="noopener" aria-label="LinkedIn">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 110-4.124 2.062 2.062 0 010 4.124zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0z"/></svg>
           </a>
@@ -134,9 +146,7 @@
           <a class="social" href="https://steamcommunity.com/id/tobiinzi" target="_blank" rel="noopener" aria-label="Steam">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658a3.39 3.39 0 011.912-.59l2.861-4.142v-.06a4.524 4.524 0 119.048.05 4.526 4.526 0 01-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159a3.395 3.395 0 01-6.721.669L.436 15.27A12 12 0 1011.979 0zM7.54 18.21l-1.473-.61a2.553 2.553 0 001.314 1.25 2.548 2.548 0 003.337-1.375 2.524 2.524 0 00.005-1.95 2.52 2.52 0 00-1.378-1.382 2.546 2.546 0 00-1.876-.03l1.523.63a1.881 1.881 0 11-1.445 3.467zm11.415-9.303a3.014 3.014 0 11-6.03.005 3.014 3.014 0 016.03-.005zm-5.273-.005a2.265 2.265 0 104.531.005 2.265 2.265 0 00-4.531-.005z"/></svg>
           </a>
-        </nav>
-      </div>
-    </div>
+    </nav>
 
     <p class="copyright">© 2026 tobiinzi</p>
 
