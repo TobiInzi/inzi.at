@@ -17,7 +17,7 @@ const contentInner = document.querySelector(".content-inner");
 const nebula = initNebula(reducedMotion);
 const field = initField({ nebula, reducedMotion });
 const journey = initJourneyPath(reducedMotion);
-initCursor(reducedMotion); // pointer trail + click ripples, tinted by --accent
+initCursor(reducedMotion); // ring follower + click flash/burst, tinted by --accent
 
 let orb = null; // the WebGL vortex on the igniter; set once its canvas has layout
 let lenis = null; // smooth-scroll instance; stays null under reduced motion / no CDN
@@ -120,6 +120,8 @@ initTabs((id) => {
   if (lenis) {
     lenis.resize(); // the active panel's height (the scroll length) just changed
     lenis.scrollTo(0, { immediate: true }); // start each panel from the top
+  } else if (content) {
+    content.scrollTop = 0; // native fallback (Lenis blocked/offline or reduced motion)
   }
 });
 
@@ -146,3 +148,11 @@ window.addEventListener("resize", () => {
 document.addEventListener("visibilitychange", () => {
   document.body.classList.toggle("frozen", document.hidden);
 });
+
+// React to the OS reduced-motion setting flipping mid-session. reducedMotion is read
+// once at boot and threaded through every subsystem (loops, waves, Lenis, cursor);
+// re-wiring them all to toggle live is a large surface, so a one-time reload cleanly
+// re-boots the page into the correct mode instead.
+window
+  .matchMedia("(prefers-reduced-motion: reduce)")
+  .addEventListener("change", () => location.reload());

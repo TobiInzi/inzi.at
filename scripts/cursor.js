@@ -1,9 +1,9 @@
-// Minimal cursor follower: a thin ring that eases toward the pointer, shrinks
-// when it's over something clickable, and pulses on click. Each click plays ONE
-// choreographed effect on a light canvas overlay: a ring IMPLODES to the point,
-// and on impact it RELEASES a burst + ripple + halo together (gather, then bloom).
-// Everything reads the live --accent through CSS, so it recolours with the
-// selected type. Pointer-events off; skipped under reduced motion / touch.
+// Minimal cursor follower: a thin ring that eases toward the pointer and shrinks
+// when it's over something clickable (taking on a hovered type orb's colour). Each
+// click plays ONE choreographed effect on a light canvas overlay: the ring IMPLODES
+// to the point, then on impact a bright FLASH and a radial dot BURST bloom outward.
+// Everything reads the live --accent through CSS, so it recolours with the selected
+// type. Pointer-events off; skipped under reduced motion / touch.
 
 // Anything that should make the ring contract (i.e. reads as interactive).
 const CLICKABLE = "a, button, [role=button], input, label, select, summary, .type, .igniter";
@@ -22,7 +22,7 @@ function hexToRgbStr(hex) {
 
 // Click choreography timing (seconds).
 const IMPLODE_DUR = 0.4; // ring collapsing inward to the point
-const RELEASE_DUR = 0.55; // burst + ripple + halo blooming outward
+const RELEASE_DUR = 0.55; // flash + burst blooming outward
 const CLICK_DUR = IMPLODE_DUR + RELEASE_DUR;
 
 export function initCursor(reducedMotion = false) {
@@ -160,7 +160,7 @@ export function initCursor(reducedMotion = false) {
       ctx.strokeStyle = `rgba(${rgb}, ${Math.min(1, a * 2.2) * fade * 0.85})`;
       ctx.stroke();
     } else {
-      // Phase 2 — impact: a bright flash, then ripple + halo + burst bloom out.
+      // Phase 2 — impact: a bright flash, then a radial dot burst blooms out.
       const a = (t - IMPLODE_DUR) / RELEASE_DUR;
       const eo = easeOut(a);
       const fade = 1 - a;

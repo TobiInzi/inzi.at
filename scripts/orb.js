@@ -97,16 +97,24 @@ export function initOrb(igniter, reducedMotion) {
     });
   if (!gl) return null;
 
-  const prog = makeProgram(gl, VERT, FRAG);
-  if (!prog) return null;
-  gl.useProgram(prog);
-  setupFullscreenTriangle(gl, prog);
-
-  const uRes = gl.getUniformLocation(prog, "u_res");
-  const uTime = gl.getUniformLocation(prog, "u_time");
-  const uDpr = gl.getUniformLocation(prog, "u_dpr");
-  const uHover = gl.getUniformLocation(prog, "u_hover");
-  const uCtime = gl.getUniformLocation(prog, "u_ctime");
+  // Program + uniform locations live in a (re)buildable function so we can recreate
+  // them if the GL context is lost and later restored (mobile backgrounding, driver
+  // reset, GPU switch) — otherwise the orb would go permanently blank.
+  let prog;
+  let uRes, uTime, uDpr, uHover, uCtime;
+  function buildProgram() {
+    prog = makeProgram(gl, VERT, FRAG);
+    if (!prog) return false;
+    gl.useProgram(prog);
+    setupFullscreenTriangle(gl, prog);
+    uRes = gl.getUniformLocation(prog, "u_res");
+    uTime = gl.getUniformLocation(prog, "u_time");
+    uDpr = gl.getUniformLocation(prog, "u_dpr");
+    uHover = gl.getUniformLocation(prog, "u_hover");
+    uCtime = gl.getUniformLocation(prog, "u_ctime");
+    return true;
+  }
+  if (!buildProgram()) return null;
 
   // Hover/focus grows the orb (shader-side, so only the orb scales — not the
   // halo or the canvas). Eased toward the target each frame.
@@ -121,9 +129,11 @@ export function initOrb(igniter, reducedMotion) {
 
   // Render at >=2x the CSS size (capped at 3x) so the small orb is always super-
   // sampled — a crisp edge + smooth gradients instead of a soft, under-resolved
-  // look — without ever upscaling on hi-DPI screens.
-  const dpr = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
+  // look — without ever upscaling on hi-DPI screens. Recomputed each resize so
+  // moving the window to a different-density monitor re-samples correctly.
+  let dpr = 2;
   const size = () => {
+    dpr = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
     const px = Math.max(1, Math.round(canvas.clientWidth * dpr));
     canvas.width = px;
     canvas.height = px;
@@ -133,7 +143,9 @@ export function initOrb(igniter, reducedMotion) {
   const t0 = performance.now();
   let lastNow = t0;
   let ctime = 0; // colour-field time, integrated so a hover speed-up never jumps
+  let contextLost = false; // pause rendering between context loss and restore
   const draw = () => {
+    if (contextLost) return; // GL calls would spam errors while the context is gone
     const now = performance.now();
     const dt = Math.min(0.05, (now - lastNow) / 1000);
     lastNow = now;
@@ -149,6 +161,23 @@ export function initOrb(igniter, reducedMotion) {
 
   let raf = 0;
   let running = true;
+
+  // Context loss (mobile backgrounding, driver reset, GPU switch): pause while lost,
+  // then rebuild the program + resize and repaint on restore. stop() removes these
+  // before deliberately dropping the context, so teardown never schedules a rebuild.
+  const onLost = (e) => {
+    e.preventDefault(); // without this the browser never fires 'restored'
+    contextLost = true;
+  };
+  const onRestored = () => {
+    if (!running || !buildProgram()) return;
+    size();
+    contextLost = false;
+    draw();
+  };
+  canvas.addEventListener("webglcontextlost", onLost);
+  canvas.addEventListener("webglcontextrestored", onRestored);
+
   const loop = () => {
     if (!running) return;
     draw();
@@ -171,6 +200,8 @@ export function initOrb(igniter, reducedMotion) {
       igniter.removeEventListener("pointerleave", onLeave);
       igniter.removeEventListener("focus", onEnter);
       igniter.removeEventListener("blur", onLeave);
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
       const ext = gl.getExtension("WEBGL_lose_context");
       if (ext) ext.loseContext();
     },

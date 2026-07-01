@@ -58,9 +58,9 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Page-wide background nebula. A single fixed WebGL canvas sits behind every-
-   thing; scripts/main.js renders a slow, domain-warped noise field onto it and
-   tints it to the selected type color. The body's --bg shows through if WebGL
+/* Page-wide background. A single fixed WebGL canvas sits behind everything;
+   scripts/nebula.js draws a set of flowing lines confined to a horizontal band and
+   tints them to the selected type color. The body's --bg shows through if WebGL
    is unavailable. */
 #bg {
   position: fixed;
@@ -482,7 +482,7 @@ body {
   animation: social-wave 5s ease-in-out infinite;
 }
 
-/* Stagger the column so the bob reads as one slow wave travelling down the icons.
+/* Stagger the row so the bob reads as one slow wave rippling across the icons.
    Negative delays start each icon already offset in the cycle. */
 .social:nth-child(1) {
   animation-delay: 0s;

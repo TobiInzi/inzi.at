@@ -1,12 +1,11 @@
 // Section switching via an ARIA tab interface: the tabs swap the visible panel in
-// the main area and reset its scroll position. Arrow / Home / End keys move
-// between tabs with automatic activation and a roving tabindex. `onChange(id)` is
-// invoked after each switch so the page can react (e.g. run the Home field loop).
+// the main area. Arrow / Home / End keys move between tabs with automatic activation
+// and a roving tabindex. `onChange(id)` is invoked after each switch so the page can
+// react (e.g. run the Home field loop and reset the scroll — native or via Lenis).
 export function initTabs(onChange) {
   const tablist = document.querySelector(".sections");
   const tabs = [...tablist.querySelectorAll(".section-link")];
   const panels = [...document.querySelectorAll(".panel")];
-  const content = document.querySelector(".content");
 
   function showSection(id) {
     for (const tab of tabs) {
@@ -19,7 +18,6 @@ export function initTabs(onChange) {
       panel.hidden = !active;
       panel.classList.toggle("is-active", active);
     }
-    content.scrollTop = 0;
     if (onChange) onChange(id);
   }
 

@@ -182,29 +182,39 @@ export function initNebula(reducedMotion) {
     });
   if (!gl) return null; // graceful: the body's --bg color shows through
 
+  // Program + uniform locations live in a (re)buildable function so we can recreate
+  // them if the GL context is lost and later restored (mobile backgrounding, driver
+  // reset, GPU switch) — otherwise the canvas would go permanently black.
+  let prog;
+  let uRes, uTime, uColorOld, uColorNew, uSeedOld, uSeedNew;
+  let uWaveOrigin, uWaveRadius, uWaveInvert, uScroll;
+  let uRevealOld, uRevealNew, uRainbow;
+  function buildProgram() {
+    prog = makeProgram(gl, VERT, FRAG);
+    if (!prog) return false;
+    gl.useProgram(prog);
+    setupFullscreenTriangle(gl, prog);
+    uRes = gl.getUniformLocation(prog, "u_res");
+    uTime = gl.getUniformLocation(prog, "u_time");
+    uColorOld = gl.getUniformLocation(prog, "u_colorOld");
+    uColorNew = gl.getUniformLocation(prog, "u_colorNew");
+    uSeedOld = gl.getUniformLocation(prog, "u_seedOld");
+    uSeedNew = gl.getUniformLocation(prog, "u_seedNew");
+    uWaveOrigin = gl.getUniformLocation(prog, "u_waveOrigin");
+    uWaveRadius = gl.getUniformLocation(prog, "u_waveRadius");
+    uWaveInvert = gl.getUniformLocation(prog, "u_waveInvert");
+    uScroll = gl.getUniformLocation(prog, "u_scroll");
+    uRevealOld = gl.getUniformLocation(prog, "u_revealOld");
+    uRevealNew = gl.getUniformLocation(prog, "u_revealNew");
+    uRainbow = gl.getUniformLocation(prog, "u_rainbow");
+    return true;
+  }
   // If the shaders fail to compile/link (e.g. a GPU without highp support), bail
   // so the body's --bg colour shows through instead of a black canvas.
-  const prog = makeProgram(gl, VERT, FRAG);
-  if (!prog) return null;
-  gl.useProgram(prog);
-  setupFullscreenTriangle(gl, prog);
+  if (!buildProgram()) return null;
 
-  const uRes = gl.getUniformLocation(prog, "u_res");
-  const uTime = gl.getUniformLocation(prog, "u_time");
-  const uColorOld = gl.getUniformLocation(prog, "u_colorOld");
-  const uColorNew = gl.getUniformLocation(prog, "u_colorNew");
-  const uSeedOld = gl.getUniformLocation(prog, "u_seedOld");
-  const uSeedNew = gl.getUniformLocation(prog, "u_seedNew");
-  const uWaveOrigin = gl.getUniformLocation(prog, "u_waveOrigin");
-  const uWaveRadius = gl.getUniformLocation(prog, "u_waveRadius");
-  const uWaveInvert = gl.getUniformLocation(prog, "u_waveInvert");
-  const uScroll = gl.getUniformLocation(prog, "u_scroll");
-  const uRevealOld = gl.getUniformLocation(prog, "u_revealOld");
-  const uRevealNew = gl.getUniformLocation(prog, "u_revealNew");
-  const uRainbow = gl.getUniformLocation(prog, "u_rainbow");
-
-  const SCALE = 0.8; // render below CSS resolution; high enough to keep the
-  // constellation's points and the grid's dots crisp (the soft styles forgive it)
+  const SCALE = 0.8; // render below CSS resolution; the soft, anti-aliased band
+  // lines forgive the downscale and it keeps the fragment shader cheap
   let w = 0;
   let h = 0;
   const resizeBuffer = () => {
@@ -226,8 +236,10 @@ export function initNebula(reducedMotion) {
   let displayedReveal = 0;
   let wave = null; // { origin, old, next, oldSeed, nextSeed, start } while crossing
   let scrollUv = 0; // page scroll in uv units; shifts the band up as you scroll
+  let contextLost = false; // pause rendering between context loss and restore
 
   const draw = (time) => {
+    if (contextLost) return; // GL calls would spam errors while the context is gone
     let oldC = displayed;
     let newC = displayed;
     let oldS = displayedSeed;
@@ -290,6 +302,21 @@ export function initNebula(reducedMotion) {
   };
 
   const now = () => performance.now() / 1000;
+
+  // Context loss (mobile backgrounding, driver reset, GPU switch): pause while lost,
+  // then rebuild the program + buffer and repaint on restore so the background comes
+  // back instead of staying black. The rAF loop keeps ticking (draw() just bails).
+  canvas.addEventListener("webglcontextlost", (e) => {
+    e.preventDefault(); // without this the browser never fires 'restored'
+    contextLost = true;
+  });
+  canvas.addEventListener("webglcontextrestored", () => {
+    if (!buildProgram()) return; // couldn't rebuild; leave the --bg fallback showing
+    resizeBuffer();
+    contextLost = false;
+    draw(now());
+  });
+
   draw(now()); // one frame up front (covers first paint + reduced motion)
 
   if (!reducedMotion) {
