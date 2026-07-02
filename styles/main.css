@@ -9,6 +9,9 @@
 }
 
 :root {
+  /* Pin the UA's default canvas to dark so a reload never flashes the white default
+     before the body background paints. */
+  color-scheme: dark;
   --bg: #0a0a0d;
   --fg: #e7e7e7;
   --muted: #8a8a8f;
@@ -22,6 +25,13 @@
      pick (toggling a class would switch the value SOURCE and snap instead). */
   --accent: var(--fg);
   --accent-text: var(--muted);
+
+  /* First-load intro cadence — the single source of truth for the staggered Home
+     line reveal below. scripts/main.js reads these same properties to time the orb
+     reveal and to end the one-shot boot state, so CSS and JS stay in lock-step. */
+  --boot-line-delay: 0.5s; /* beat before the first line arrives */
+  --boot-line-stagger: 0.9s; /* gap between each line */
+  --boot-line-dur: 1.05s; /* per-line fade + focus-pull */
 }
 
 *,
@@ -44,11 +54,18 @@ body {
   padding: 0;
 }
 
+/* The dark backdrop lives on the root (html), NOT body: body is positioned, so an
+   opaque body background would paint over the fixed #bg canvas (z-index:-1) and hide
+   the nebula. Keeping it on the root leaves body transparent (canvas shows through)
+   and means a reload never flashes the white default before paint. */
+html {
+  background-color: var(--bg);
+}
+
 body {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: var(--bg);
   color: var(--fg);
   font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas,
     monospace;
@@ -60,8 +77,8 @@ body {
 
 /* Page-wide background. A single fixed WebGL canvas sits behind everything;
    scripts/nebula.js draws a set of flowing lines confined to a horizontal band and
-   tints them to the selected type color. The body's --bg shows through if WebGL
-   is unavailable. */
+   tints them to the selected type color. The root's --bg shows through around the
+   band, and everywhere if WebGL is unavailable. */
 #bg {
   position: fixed;
   inset: 0;
@@ -200,13 +217,44 @@ body {
   margin-inline: auto;
 }
 
-/* The visible panel rises in — re-triggers each time a section is shown. */
-.panel.is-active {
+/* Tab switches: the newly shown panel rises in. main.js re-adds .animate-in (with a
+   reflow) on every switch so it restarts. The very first load skips this — the Home
+   panel runs the staggered boot intro below instead. */
+.panel.animate-in {
   animation: rise 0.5s ease both;
 }
 
 .panel[hidden] {
   display: none;
+}
+
+/* First-load intro: while body.is-booting is set (removed by main.js once the intro
+   has played), the Home copy fades up line by line with a soft focus-pull, so the
+   page assembles itself instead of snapping in. */
+body.is-booting .panel[data-section="1"] > p {
+  animation: boot-line var(--boot-line-dur) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+body.is-booting .panel[data-section="1"] > p:nth-of-type(1) {
+  animation-delay: var(--boot-line-delay); /* a short beat before the copy arrives */
+}
+body.is-booting .panel[data-section="1"] > p:nth-of-type(2) {
+  animation-delay: calc(var(--boot-line-delay) + var(--boot-line-stagger));
+}
+body.is-booting .panel[data-section="1"] > p:nth-of-type(3) {
+  animation-delay: calc(var(--boot-line-delay) + 2 * var(--boot-line-stagger));
+}
+
+@keyframes boot-line {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
 .panel p {
@@ -217,6 +265,113 @@ body {
 /* Paragraph break between stacked lines of copy (not before the field). */
 .panel p + p {
   margin-top: 1em;
+}
+
+/* On ignite the three intro lines are cleared for good (opacity:0 — this is also the
+   reduced-motion fallback and, crucially, the state that survives a tab switch away
+   and back without re-animating). The blur-and-lift exit only plays during the brief
+   one-shot .hint-clearing window main.js adds at ignite, so re-showing the Home panel
+   later doesn't replay it. The field's load intro plays next; once it settles the
+   colour hint (below) takes over. */
+body.is-ignited .panel[data-section="1"] > p {
+  opacity: 0;
+}
+body.is-ignited.hint-clearing .panel[data-section="1"] > p {
+  animation: hint-out 0.4s ease both;
+}
+body.is-ignited.hint-clearing .panel[data-section="1"] > p:nth-of-type(2) {
+  animation-delay: 0.06s;
+}
+body.is-ignited.hint-clearing .panel[data-section="1"] > p:nth-of-type(3) {
+  animation-delay: 0.12s;
+}
+
+@keyframes hint-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+    filter: blur(5px);
+  }
+}
+
+/* Colour hint: a small, uppercase, letter-spaced line dead-centre on screen (the same
+   understated type as the "scroll to explore" prompt, minus any mark/pulse). main.js
+   fades it in once the icons have settled and removes it for good on the first pick.
+   While visible it bobs gently up and down so it isn't completely static — the wave
+   keyframes carry the centring translate so they don't fight it. */
+.color-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  z-index: 6;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.6s ease;
+  /* The bob only runs while shown. Pausing (rather than removing) it on hide freezes
+     the transform where it is, so the hint fades out smoothly instead of snapping back
+     to centre mid-wave. */
+  animation: color-hint-wave 3.6s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.color-hint.is-visible {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+@keyframes color-hint-wave {
+  0%,
+  100% {
+    transform: translate(-50%, calc(-50% - 0.3rem));
+  }
+  50% {
+    transform: translate(-50%, calc(-50% + 0.3rem));
+  }
+}
+
+/* The colour-changing "glowing orb" phrase: a flowing rainbow clipped to the text,
+   echoing the ignite orb, with a soft dual-hue bloom so it reads as radiant rather
+   than flat. The gradient's two ends share a colour so the slow drift loops
+   seamlessly — the site's cue that the colours are the point. */
+.rainbow-text {
+  background-image: linear-gradient(
+    100deg,
+    #ff6b6b,
+    #ffd166,
+    #06d6a0,
+    #3ec6ff,
+    #b892ff,
+    #ff6b6b
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(120, 180, 255, 0.35))
+    drop-shadow(0 0 11px rgba(255, 130, 200, 0.25));
+  animation: rainbow-flow 7s ease-in-out infinite;
+  font-weight: 400;
+}
+
+@keyframes rainbow-flow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* Me section: quiet scroll narrative. It opens on the shader with only a small
@@ -465,6 +620,28 @@ body {
   pointer-events: none; /* enabled once the icons are revealed */
 }
 
+/* Ignite charge-up (scripts/charge.js): the stream of small coloured orbs drawn
+   from all over the screen into the main orb while it "loads". JS sets each one's
+   size, colour, glow, and per-frame transform/opacity; CSS just fixes the shared
+   look. Above the content, below the cursor ring + click canvas. */
+.charge-orb {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 50;
+  will-change: transform, opacity;
+}
+
+/* While the charge is paused (Me tab open, or the tab hidden), hide the frozen orbs
+   so they don't sit as static dots over another panel. They reappear, mid-flight,
+   when Home is shown again and the charge resumes. */
+body.charge-paused .charge-orb {
+  visibility: hidden;
+}
+
 /* Fading dots dropped behind a travelling orb (positioned by JS). */
 .trail {
   position: absolute;
@@ -476,6 +653,22 @@ body {
   pointer-events: none;
   opacity: 0;
   z-index: 0;
+  will-change: transform, opacity;
+}
+
+/* Selection cue (scripts/field.js): the small orbs that circle a hovered drifting
+   icon. JS owns the colour, glow, orbit position, and fade; above the icons so the
+   ring reads clearly over neighbours. */
+.select-orb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
   will-change: transform, opacity;
 }
 
@@ -500,8 +693,30 @@ body {
   transition: opacity 0.6s ease, transform 0.25s ease;
 }
 
+/* The orb visible + interactive. opacity:1 is the static state (also the reduced-
+   motion fallback, since that cancels the intro animation). */
 .igniter.is-shown {
   opacity: 1;
+}
+
+/* First-load only (main.js adds .orb-intro just for this reveal, never on a tab
+   return): the orb springs up from nothing to full size with a soft back-ease pop. */
+.igniter.is-shown.orb-intro {
+  animation: orb-arrive 1.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes orb-arrive {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 /* The vortex canvas — larger than the button so its glow + wisps have room; the
@@ -646,6 +861,7 @@ body {
   /* JS rewrites `transform` every frame, so it must NOT be transitioned. The
      reveal (opacity), the orb morph (background), and the focus ring do. */
   transition: opacity 0.6s ease, background-color 0.16s ease, box-shadow 0.2s ease;
+  will-change: transform; /* every icon is transform-animated each frame by JS */
 }
 
 .field.ready .type {
@@ -654,6 +870,14 @@ body {
 
 .type.is-active {
   z-index: 2;
+}
+
+/* Hovered while drifting (scripts/field.js freezes it + spins the selection orbs):
+   a soft radiating glow in the icon's own colour. The transition on .type fades the
+   box-shadow in/out; the swell to a larger size is handled JS-side via transform. */
+.type.is-hovered {
+  z-index: 2;
+  box-shadow: 0 0 0.9rem 0.14rem var(--type-color);
 }
 
 /* Travelling state: the icon becomes a small glowing single-colour orb. */
@@ -745,17 +969,22 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
-  .panel.is-active,
+  .panel.animate-in,
   .igniter,
-  .igniter.is-firing {
+  .igniter.is-shown.orb-intro,
+  .igniter.is-firing,
+  .panel[data-section="1"] > p {
     animation: none;
   }
-  .social {
+  .social,
+  .rainbow-text,
+  .color-hint {
     animation: none;
   }
   .copyright,
   .socials,
   .social,
+  .color-hint,
   .section-link,
   .accent,
   .type,

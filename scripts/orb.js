@@ -15,6 +15,7 @@ const FRAG = `
   uniform float u_dpr;
   uniform float u_hover;
   uniform float u_ctime; // colour-field time; runs faster while hovered
+  uniform float u_charge; // 0..1 ignite load-up: brighter, tighter, faster drift
 
   vec3 hsv2rgb(vec3 c){
     vec3 k = abs(fract(c.x + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);
@@ -29,7 +30,7 @@ const FRAG = `
     // gentle size breathing; hover grows the ORB only (the halo below is anchored
     // to baseR, so the hover doesn't scale the glow with it)
     float baseR = 0.48 + 0.01 * sin(t * 0.55);
-    float orbR = baseR * (1.0 + 0.12 * u_hover);
+    float orbR = baseR * (1.0 + 0.12 * u_hover - 0.34 * u_charge); // tightens hard as it charges
 
     // colour-field time (accelerates on hover, integrated in JS so it never jumps)
     float ct = u_ctime;
@@ -60,8 +61,14 @@ const FRAG = `
     vec3 L = normalize(vec3(-0.35, 0.55, 0.75));
     col += pow(max(dot(n, L), 0.0), 14.0) * 0.5;
 
-    // a defined bright rim ring (like the logo's ring) — a thin glassy fresnel
-    col += pow(1.0 - z, 4.0) * edge * 0.28;
+    // Charge-up brightening, ALL gated behind wc = charge³ so it stays near zero for
+    // most of the load-up and only ramps in at the very end. For the bulk of the
+    // charge the orb is just a plain rainbow that drifts faster and faster; only in
+    // the final stretch does the rim flare, a white-hot core swell, and it white out.
+    float wc = u_charge * u_charge * u_charge;
+    col += pow(1.0 - z, 4.0) * edge * (0.28 + 0.7 * wc); // rim: extra shine only late
+    col += pow(max(1.0 - rr, 0.0), 2.5) * wc * 2.6 * edge; // white-hot core, late
+    col *= 1.0 + 0.85 * wc;
 
     // fine film grain at display-pixel scale (floor by u_dpr so it survives the
     // supersample downscale), on the sphere body only so the halo stays smooth:
@@ -75,7 +82,7 @@ const FRAG = `
     float haloSpread = 0.16 + 0.06 * sin(t * 1.1);
     float halo = exp(-pow(max(r - baseR, 0.0) / haloSpread, 2.0)) * (1.0 - edge);
     col = mix(col, mix(col, vec3(1.0), 0.72), 1.0 - edge);
-    float alpha = clamp(edge + halo * 0.10, 0.0, 1.0);
+    float alpha = clamp(edge + halo * (0.10 + 0.20 * wc), 0.0, 1.0);
     gl_FragColor = vec4(col, alpha);
   }
 `;
@@ -101,7 +108,7 @@ export function initOrb(igniter, reducedMotion) {
   // them if the GL context is lost and later restored (mobile backgrounding, driver
   // reset, GPU switch) — otherwise the orb would go permanently blank.
   let prog;
-  let uRes, uTime, uDpr, uHover, uCtime;
+  let uRes, uTime, uDpr, uHover, uCtime, uCharge;
   function buildProgram() {
     prog = makeProgram(gl, VERT, FRAG);
     if (!prog) return false;
@@ -112,6 +119,7 @@ export function initOrb(igniter, reducedMotion) {
     uDpr = gl.getUniformLocation(prog, "u_dpr");
     uHover = gl.getUniformLocation(prog, "u_hover");
     uCtime = gl.getUniformLocation(prog, "u_ctime");
+    uCharge = gl.getUniformLocation(prog, "u_charge");
     return true;
   }
   if (!buildProgram()) return null;
@@ -120,8 +128,20 @@ export function initOrb(igniter, reducedMotion) {
   // halo or the canvas). Eased toward the target each frame.
   let hover = 0;
   let hoverTarget = 0;
-  const onEnter = () => (hoverTarget = 1);
-  const onLeave = () => (hoverTarget = 0);
+  // Ignite charge-up, driven externally via setCharge() (scripts/charge.js): eased
+  // toward its target each frame so it ramps smoothly from calm orb to loaded core.
+  let charge = 0;
+  let chargeTarget = 0;
+  // Once the charge begins, the hover size is frozen so the load-up shrink starts
+  // from the (grown) hovered size instead of snapping back to the un-hovered size
+  // when the pointer leaves. Hover changes are ignored from then on.
+  let charging = false;
+  const onEnter = () => {
+    if (!charging) hoverTarget = 1;
+  };
+  const onLeave = () => {
+    if (!charging) hoverTarget = 0;
+  };
   igniter.addEventListener("pointerenter", onEnter);
   igniter.addEventListener("pointerleave", onLeave);
   igniter.addEventListener("focus", onEnter);
@@ -150,12 +170,16 @@ export function initOrb(igniter, reducedMotion) {
     const dt = Math.min(0.05, (now - lastNow) / 1000);
     lastNow = now;
     hover += (hoverTarget - hover) * 0.18; // ease toward hovered/un-hovered
-    ctime += dt * (1.0 + hover * 3.0); // colour changes up to ~4x faster on hover
+    charge += (chargeTarget - charge) * 0.12; // ease toward the charge level
+    // colour drift gets faster and faster as it charges (charge^2 so it ramps up,
+    // not just up): calm normally, whirling by the time it's fully loaded
+    ctime += dt * (1.0 + hover * 3.0 + charge * charge * 16.0);
     gl.uniform2f(uRes, canvas.width, canvas.height);
     gl.uniform1f(uTime, (now - t0) / 1000);
     gl.uniform1f(uDpr, dpr);
     gl.uniform1f(uHover, hover);
     gl.uniform1f(uCtime, ctime);
+    gl.uniform1f(uCharge, charge);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
@@ -189,6 +213,18 @@ export function initOrb(igniter, reducedMotion) {
   else loop();
 
   return {
+    // Freeze the current (hovered/grown) size as the charge's starting point, so the
+    // load-up shrink eases down from it with no snap back to the un-hovered size.
+    // Call once, synchronously, at the moment ignite starts.
+    beginCharge() {
+      charging = true;
+      hoverTarget = hover;
+    },
+    // Set the ignite charge level (0..1). Eased in the draw loop, so callers can
+    // ramp it over time and the orb brightens + tightens smoothly toward it.
+    setCharge(v) {
+      chargeTarget = Math.min(1, Math.max(0, v));
+    },
     resize() {
       size();
       draw();

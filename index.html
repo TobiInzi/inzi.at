@@ -9,8 +9,28 @@
       content="Personal site and portfolio of tobiinzi."
     />
     <meta name="color-scheme" content="dark" />
+    <!-- Critical, inline, literal-colour backdrop. Applied from the first bytes of the
+         head — before the external stylesheet (or its var(--bg)) resolves — so the
+         compositor's base background is dark during a reload's swap frame and the page
+         never flashes the white default. main.css restates the same value on <html>. -->
+    <style>
+      :root { color-scheme: dark; }
+      html { background-color: #0a0a0d; }
+    </style>
     <meta name="author" content="tobiinzi" />
     <meta name="theme-color" content="#0a0a0d" />
+    <link rel="canonical" href="https://tobiinzi.com/" />
+
+    <!-- Open Graph / Twitter share cards. Plain "summary" for now: a 1200×630
+         og:image is still a todo, so we don't advertise a large-image card yet. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tobias Inzinger" />
+    <meta property="og:title" content="Tobias Inzinger" />
+    <meta property="og:description" content="Personal site and portfolio of tobiinzi." />
+    <meta property="og:url" content="https://tobiinzi.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Tobias Inzinger" />
+    <meta name="twitter:description" content="Personal site and portfolio of tobiinzi." />
 
     <!-- Favicons: SVG for modern browsers, .ico as the legacy fallback. -->
     <link rel="icon" href="favicon.ico" sizes="32x32" />
@@ -36,7 +56,7 @@
       </style>
     </noscript>
   </head>
-  <body>
+  <body class="is-booting">
     <canvas id="bg" aria-hidden="true"></canvas>
     <div class="layout">
       <aside class="sidebar">
@@ -57,7 +77,7 @@
             I'm a computer science student based in
             <span class="accent">Munich</span>.
           </p>
-          <p>Why don't you click the glowing orb and see what happens?</p>
+          <p>Why don't you click the <span class="rainbow-text">glowing orb</span> and see what happens?</p>
           <div class="field" role="group" aria-label="Accent color">
             <button type="button" class="igniter" aria-label="Begin">
               <canvas class="orb-gl" aria-hidden="true"></canvas>
@@ -145,6 +165,10 @@
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658a3.39 3.39 0 011.912-.59l2.861-4.142v-.06a4.524 4.524 0 119.048.05 4.526 4.526 0 01-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159a3.395 3.395 0 01-6.721.669L.436 15.27A12 12 0 1011.979 0zM7.54 18.21l-1.473-.61a2.553 2.553 0 001.314 1.25 2.548 2.548 0 003.337-1.375 2.524 2.524 0 00.005-1.95 2.52 2.52 0 00-1.378-1.382 2.546 2.546 0 00-1.876-.03l1.523.63a1.881 1.881 0 11-1.445 3.467zm11.415-9.303a3.014 3.014 0 11-6.03.005 3.014 3.014 0 016.03-.005zm-5.273-.005a2.265 2.265 0 104.531.005 2.265 2.265 0 00-4.531-.005z"/></svg>
           </a>
     </nav>
+
+    <!-- Appears in the upper centre once the icons have settled into place, inviting a
+         colour pick; removed for good the moment one is chosen (scripts/main.js). -->
+    <p class="color-hint" aria-hidden="true">Choose a color</p>
 
     <p class="copyright">© 2026 tobiinzi</p>
 

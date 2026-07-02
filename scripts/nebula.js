@@ -130,12 +130,15 @@ const FRAG = `
     float collapse = smoothstep(u_waveRadius, u_waveRadius + 0.07, wdist);
     float passed = mix(expand, collapse, u_waveInvert);
 
-    // Line visibility cross-dissolves across the front too, so the page starts
-    // DARK (reveal 0) and the ignite wave paints the lines in behind its front.
-    float reveal = mix(u_revealOld, u_revealNew, passed);
-    float Lold = variantL(variantOf(u_seedOld), x, by, t);
-    float Lnew = variantL(variantOf(u_seedNew), x, by, t);
-    float L = mix(Lold, Lnew, passed) * env * reveal;
+    // Each side carries its OWN line visibility, applied BEFORE the cross-dissolve,
+    // so a hidden side (reveal 0) contributes no line structure at all. A single
+    // SHARED reveal would instead let the old variant's lines ghost through the front:
+    // the first pick reveals from a dark page, and the default flow lines would be
+    // faintly visible in the wave. Pre-revealing each side keeps the transition clean —
+    // old fades fully out, new fades in, no residual pattern in the front.
+    float Lold = variantL(variantOf(u_seedOld), x, by, t) * u_revealOld;
+    float Lnew = variantL(variantOf(u_seedNew), x, by, t) * u_revealNew;
+    float L = mix(Lold, Lnew, passed) * env;
 
     // Colour: crisp neutral-grey lines by default; the picked type's colour washes
     // in across the front (sel ~ 0 when nothing is selected, so the lines stay grey).
@@ -145,18 +148,28 @@ const FRAG = `
 
     vec3 col = BASE + L * lineCol;
 
-    // the wave front flares the lines it crosses — a travelling highlight. The
-    // ignite wave is special: its front is a rainbow (hue from the angle) and it
-    // flashes across the whole band, not just the lines, so it reads as a rainbow
-    // shockwave sweeping out and leaving the (grey) lines behind it.
+    // The wave front flares the lines it crosses (brightest — the band stays the
+    // hero), and for the rainbow ignite it also flashes the whole band. On TOP of
+    // that a subtler pass paints the ring across the ENTIRE screen, so the shockwave
+    // visibly sweeps the full viewport instead of looking boxed into the band. The
+    // ignite wave's front is a rainbow (hue from the angle); type picks/releases use
+    // the (de)selected colour. ring ~ 0 when idle (radius is parked huge), so the
+    // full-screen pass only appears while a wave is actually crossing.
     float ring = exp(-pow((wdist - u_waveRadius) / 0.05, 2.0));
     vec3 rimColor = mix(u_colorNew, u_colorOld, u_waveInvert);
+    // The ignite (rainbow) wave stays SMALL and local: its ring is multiplied by a
+    // tight gaussian falloff in distance from the orb, so it blooms just around the
+    // orb and fades to nothing a short way out instead of sweeping the whole viewport
+    // like a type-pick wave. fall == 1.0 for type picks/releases, so those are unchanged.
+    float fall = 1.0;
     if (u_rainbow > 0.5){
       float ang = atan(wd.y, wd.x);
       rimColor = hsv2rgb(vec3(ang / 6.2831853 + u_time * 0.06, 0.85, 1.0));
+      fall = exp(-pow(wdist / 0.11, 2.0)); // vanishes ~0.2uv out from the orb
     }
-    col += rimColor * ring * L * 0.9;
-    col += rimColor * ring * env * u_rainbow * 0.22;
+    col += rimColor * ring * L * 0.9 * fall;                // flare the lines it crosses
+    col += rimColor * ring * env * u_rainbow * 0.22 * fall; // rainbow band flash on ignite
+    col += rimColor * ring * 0.16 * fall;                   // full-screen shockwave sweep
 
     // a whisper of dither to keep the dark from banding
     col += (hash21(gl_FragCoord.xy + fract(u_time)) - 0.5) * 0.006;

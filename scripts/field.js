@@ -7,6 +7,7 @@
 // icon orbs back out along a curve to the band. JS owns every icon's transform, so
 // there are no CSS transitions to race against on position.
 import { NONE_COLOR } from "./nebula.js";
+import { clamp, rnd, nowSec, easeInOut, easeOut, hexToRgb } from "./util.js";
 
 const MIN_SPEED = 4; // px/sec — slowest a drifting icon travels
 const MAX_SPEED = 12; // px/sec — fastest
@@ -25,24 +26,20 @@ const TRAIL_LIFE = 0.28; // sec a trail dot lingers
 const TRAIL_GAP = 0.035; // sec between dropped dots (bigger = sparser trail)
 const TRAIL_MAX = 24; // trail dot pool size
 const TRAIL_ALPHA = 0.55; // peak opacity of a fresh trail dot
-const BURST_DELAY = 0.45; // sec the icons wait stacked at the middle before bursting
+const BURST_DELAY = 0; // burst the icons the instant the orb detonates, so the orb's
+// explosion and the scattering icons read as one blast (not two)
 const BURST_DUR = 0.5; // sec for the load explosion outward from the middle
-const BURST_RADIUS_F = 0.16; // ring radius, as a fraction of the field's short side
-const BURST_ZIG_F = 0.045; // alternating radius offset, so the ring is "zigged"
+const BURST_RADIUS_MIN = 0.14; // nearest an exploded icon lands (fraction of short side)
+const BURST_RADIUS_MAX = 0.44; // farthest — the distance is random per icon so the blast
+// reads as a real scatter (varied distances) instead of icons pinned to a ring
 const BURST_HOLD = 0.15; // sec the exploded icons hold before orbing to the pool
 const LAUNCH_STAGGER = 0.1; // sec between each icon launching its orb flight
+const SELECT_ORBS = 3; // small orbs that circle a hovered (drifting) icon
+const SELECT_ORBIT_F = 1.55; // orbit radius, in icon radii (just outside the icon)
+const SELECT_SPIN = 3.2; // rad/sec the selection orbs circle at
+const HOVER_SCALE = 1.22; // a hovered (frozen) icon swells slightly under the pointer
 
-const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-const rnd = (lo, hi) => lo + Math.random() * (hi - lo);
-const nowSec = () => performance.now() / 1000;
-const easeInOut = (t) => t * t * (3 - 2 * t);
-const easeOut = (t) => 1 - (1 - t) ** 3; // fast then decelerating, for the burst
 const colorOf = (ic) => ic.btn.style.getPropertyValue("--type-color").trim();
-
-function hexToRgb(hex) {
-  const v = hex.replace("#", "");
-  return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
-}
 
 // Quadratic Bézier point at parameter e (0..1) along a travel's arc.
 function bezierPoint(tr, e) {
@@ -55,7 +52,7 @@ function bezierPoint(tr, e) {
 
 // Set up the floating field over the `.field` element. `nebula` (may be null) is
 // used to fire the shockwaves; `reducedMotion` swaps animation for instant snaps.
-export function initField({ nebula, reducedMotion }) {
+export function initField({ nebula, reducedMotion, onFirstPick }) {
   const root = document.documentElement;
   const field = document.querySelector(".field");
   const buttons = [...field.querySelectorAll(".type")];
@@ -76,6 +73,23 @@ export function initField({ nebula, reducedMotion }) {
     arrivedAt: 0, // when the orb reached its end (to time the morph-back)
     lastTrail: 0, // time the last trail dot was dropped (to space them out)
   }));
+
+  // Time from ignite() until the last icon has settled into the drift band: the load
+  // intro's full length, derived from its phase constants so it tracks any tuning.
+  const introSettleSec =
+    BURST_DELAY +
+    BURST_DUR +
+    BURST_HOLD +
+    (icons.length - 1) * LAUNCH_STAGGER +
+    TRAVEL_DUR +
+    MORPH_SEC;
+  let firstPicked = false;
+
+  // Hover-to-select: the drifting icon the pointer is currently over. While set (and
+  // still drifting) that icon freezes in place and three small orbs circle it as a
+  // selection cue. Only ever a small floating icon — never the big centred one.
+  let hoveredIc = null;
+  const isFrozen = (ic) => ic === hoveredIc && ic.mode === "drift";
 
   // Field geometry, refreshed on resize. The drift band is the rectangle
   // [xMin,xMax]×[yMin,yMax]; the active target is the centre of the page.
@@ -142,8 +156,8 @@ export function initField({ nebula, reducedMotion }) {
   // Pick a band spot that's as far as possible from where the OTHER icons are (or
   // are heading), so a returning orb doesn't land on top of one and snap apart.
   function openSpot(self) {
-    let best = [rnd(xMin, xMax), rnd(yMin, yMax)];
-    let bestNear = -1;
+    let best = null;
+    let bestNear = -Infinity;
     for (let i = 0; i < 14; i++) {
       const x = rnd(xMin, xMax);
       const y = rnd(yMin, yMax);
@@ -159,7 +173,7 @@ export function initField({ nebula, reducedMotion }) {
         best = [x, y];
       }
     }
-    return best;
+    return best || [rnd(xMin, xMax), rnd(yMin, yMax)];
   }
 
   // Orb an icon back out to an open spot in the band.
@@ -201,6 +215,58 @@ export function initField({ nebula, reducedMotion }) {
     }
   }
 
+  // Selection cue: a small fixed set of orbs that circle whichever drifting icon the
+  // pointer is hovering. `selectIc` holds the icon they're attached to; it lingers
+  // through the fade-out (so they trail the icon as it drifts away) and clears once
+  // faded. `selectFade` eases their appearance in/out; `selectSpin` is the orbit angle.
+  const selectOrbs = [];
+  let selectIc = null;
+  let selectFade = 0;
+  let selectSpin = 0;
+  let glowIc = null; // the icon currently wearing the hover glow class (for clean toggling)
+  function initSelectOrbs() {
+    for (let i = 0; i < SELECT_ORBS; i++) {
+      const el = document.createElement("span");
+      el.className = "select-orb";
+      field.appendChild(el);
+      selectOrbs.push(el);
+    }
+  }
+  function updateSelectOrbs(dt, k) {
+    const target = hoveredIc && hoveredIc.mode === "drift" ? hoveredIc : null;
+    // Radiating glow on the hovered icon itself (CSS transitions the box-shadow in/out).
+    if (glowIc && glowIc !== target) {
+      glowIc.btn.classList.remove("is-hovered");
+      glowIc = null;
+    }
+    if (target && glowIc !== target) {
+      target.btn.classList.add("is-hovered");
+      glowIc = target;
+    }
+    if (target) selectIc = target;
+    selectFade += ((target ? 1 : 0) - selectFade) * k;
+    if (!target && selectFade < 0.02) {
+      if (selectIc) {
+        selectIc = null;
+        for (const el of selectOrbs) el.style.opacity = "0";
+      }
+      return;
+    }
+    if (!selectIc) return;
+    selectSpin += SELECT_SPIN * dt;
+    const orbitR = iconR * SELECT_ORBIT_F;
+    const color = colorOf(selectIc);
+    selectOrbs.forEach((el, i) => {
+      const a = selectSpin + (i / SELECT_ORBS) * Math.PI * 2;
+      const x = selectIc.x + Math.cos(a) * orbitR;
+      const y = selectIc.y + Math.sin(a) * orbitR;
+      el.style.background = color;
+      el.style.boxShadow = `0 0 0.35rem 0.04rem ${color}`;
+      el.style.opacity = String(selectFade);
+      el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${selectFade})`;
+    });
+  }
+
   // Load intro: stack every icon at the middle, then explode them outward to
   // scattered spots (random direction + distance). Each then orbs to a pool spot
   // one after another, in a shuffled order, via the normal travel (morph + trail).
@@ -208,13 +274,13 @@ export function initField({ nebula, reducedMotion }) {
     const cx = targetX;
     const cy = targetY;
     const base = Math.min(fieldW, fieldH);
-    const jit = (Math.PI / icons.length) * 0.5; // angular wobble, up to half a slot
+    const jit = (Math.PI / icons.length) * 0.9; // angular wobble, most of a slot
     const start = nowSec() + BURST_DELAY;
     icons.forEach((ic, i) => {
-      // even angle around the ring + a little wobble; radius alternates in/out so
-      // the icons land on a rough "zigged" circle rather than a clean one.
+      // roughly even angle around the circle + a good wobble, and a RANDOM distance
+      // per icon, so the icons scatter to varied depths rather than onto a clean ring.
       const angle = (i / icons.length) * Math.PI * 2 + rnd(-jit, jit);
-      const r = (BURST_RADIUS_F + (i % 2 ? -BURST_ZIG_F : BURST_ZIG_F)) * base;
+      const r = rnd(BURST_RADIUS_MIN, BURST_RADIUS_MAX) * base;
       ic.x = cx;
       ic.y = cy;
       ic.scale = 0.4; // small at the core, grows to full as it flies out
@@ -297,6 +363,10 @@ export function initField({ nebula, reducedMotion }) {
   // Pick an icon: orb it up to the page centre. Anything currently claiming the
   // centre (centred, or still flying in) is sent back out first.
   function pick(ic) {
+    if (!firstPicked) {
+      firstPicked = true;
+      if (onFirstPick) onFirstPick(); // first colour chosen — retire the colour hint
+    }
     if (reducedMotion) {
       // No loop to animate travel: drop everyone else home, snap the pick in, fire.
       for (const o of icons) {
@@ -440,6 +510,10 @@ export function initField({ nebula, reducedMotion }) {
       (ic) => ic.mode === "drift" || ic.mode === "in" || ic.mode === "out"
     );
     for (const ic of drift) {
+      if (isFrozen(ic)) {
+        ic.scale += (HOVER_SCALE - ic.scale) * k; // held still, swelling a touch under the pointer
+        continue;
+      }
       let ax = 0;
       let ay = 0;
       for (const o of solid) {
@@ -463,6 +537,7 @@ export function initField({ nebula, reducedMotion }) {
       ic.scale += (1 - ic.scale) * k;
     }
     for (const ic of drift) {
+      if (isFrozen(ic)) continue; // frozen under the pointer — don't advance it
       ic.x += ic.vx * dt;
       ic.y += ic.vy * dt;
       // reflect off the band edges so nothing drifts out
@@ -483,13 +558,19 @@ export function initField({ nebula, reducedMotion }) {
         const d2 = dx * dx + dy * dy;
         if (d2 > 0 && d2 < minGap * minGap) {
           const d = Math.sqrt(d2);
-          const push = (minGap - d) / 2;
+          const gap = minGap - d;
           const ux = dx / d;
           const uy = dy / d;
-          i.x -= ux * push;
-          i.y -= uy * push;
-          j.x += ux * push;
-          j.y += uy * push;
+          // A frozen (hovered) icon holds its ground; the other yields the full gap.
+          const iFrozen = isFrozen(i);
+          const jFrozen = isFrozen(j);
+          if (iFrozen && jFrozen) continue;
+          const iShare = jFrozen ? gap : gap / 2;
+          const jShare = iFrozen ? gap : gap / 2;
+          i.x -= ux * iShare;
+          i.y -= uy * iShare;
+          j.x += ux * jShare;
+          j.y += uy * jShare;
         } else if (d2 === 0) {
           i.x -= 0.5;
           j.x += 0.5;
@@ -503,6 +584,7 @@ export function initField({ nebula, reducedMotion }) {
 
     for (const ic of icons) render(ic);
     updateTrail(now);
+    updateSelectOrbs(dt, k);
   }
 
   let lastT = 0;
@@ -530,6 +612,21 @@ export function initField({ nebula, reducedMotion }) {
   function stopField() {
     fieldRunning = false;
     cancelAnimationFrame(fieldRaf);
+    resetHover(); // clear any hover held over from a keyboard tab-switch (no pointerleave)
+  }
+
+  // Drop all hover-selection state at once (used when the field stops). Without this,
+  // leaving Home by keyboard leaves hoveredIc set — with no pointerleave to clear it —
+  // so returning would spuriously freeze that icon and spin its orbs with no pointer on it.
+  function resetHover() {
+    hoveredIc = null;
+    selectIc = null;
+    selectFade = 0;
+    if (glowIc) {
+      glowIc.btn.classList.remove("is-hovered");
+      glowIc = null;
+    }
+    for (const el of selectOrbs) el.style.opacity = "0";
   }
 
   field.addEventListener("click", (event) => {
@@ -543,17 +640,34 @@ export function initField({ nebula, reducedMotion }) {
     if (event.detail) button.blur();
   });
 
-  // Reveal the icons and start the loop — the field side of "ignite".
-  function ignite() {
+  // Hover-to-select on the drifting icons: mark the one under a (real, non-touch)
+  // pointer so step() freezes it and spins the selection orbs around it. The mode
+  // gate lives in step(), so hovering the centred icon sets this but shows nothing.
+  buttons.forEach((btn, idx) => {
+    btn.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "touch") return; // no lingering hover state on touch
+      hoveredIc = icons[idx];
+    });
+    btn.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "touch") return;
+      if (hoveredIc === icons[idx]) hoveredIc = null;
+    });
+  });
+
+  // Reveal the icons and start the loop — the field side of "ignite". `onSettled` (if
+  // given) fires once the load intro has finished and every icon is in the drift band.
+  function ignite(onSettled) {
     if (ignited) return;
     ignited = true;
     field.classList.add("ready"); // reveal the icons + enable field clicks
     for (const b of buttons) b.removeAttribute("inert"); // expose them to AT now
     if (reducedMotion) {
       renderAll();
+      if (onSettled) onSettled(); // no intro to wait on
     } else {
       startIntro();
       startField();
+      if (onSettled) window.setTimeout(onSettled, introSettleSec * 1000);
     }
     // The igniter (which holds focus if it was activated by keyboard) is being
     // removed; hand focus to the first icon so keyboard users keep their place.
@@ -590,6 +704,7 @@ export function initField({ nebula, reducedMotion }) {
   // One-time field setup: build the trail pool and hide the icons from AT until
   // they're revealed at ignite.
   initTrail();
+  initSelectOrbs();
   for (const b of buttons) b.setAttribute("inert", "");
 
   return {

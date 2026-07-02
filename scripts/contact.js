@@ -3,6 +3,7 @@
 // curved paths (trailing behind them) to the lower-right corner and settle as the
 // social icons. From then on they're the normal, accent-tinted, slowly bobbing
 // links. State lives only in memory, so a reload resets it (like the ignite orb).
+import { easeInOut, nowSec } from "./util.js";
 
 const TRAVEL_DUR = 1.5; // sec for one orb's flight to the corner
 const STAGGER = 0.14; // sec between each orb launching, so they fan out
@@ -11,9 +12,6 @@ const CURVE = 0.32; // arc bow as a fraction of the flight distance
 const TRAIL_LIFE = 0.5; // sec a trail dot lingers
 const TRAIL_GAP = 0.035; // sec between dropped trail dots
 const FADE_MS = 320; // orb/seed fade-out (matches the CSS opacity transition)
-
-const easeInOut = (t) => t * t * (3 - 2 * t);
-const nowSec = () => performance.now() / 1000;
 
 // Reveal the sidebar Contact control's fly-in. `reducedMotion` skips straight to the
 // settled state. No-ops (leaving the links shown by the noscript fallback) if the
@@ -81,7 +79,7 @@ export function initContact(reducedMotion = false) {
     btn.classList.add("is-morphing");
     const seed = makeOrb(src.x, src.y, "contact-seed");
     seed.style.transform = `translate(${src.x}px, ${src.y}px) translate(-50%, -50%) scale(0)`;
-    seed.offsetWidth; // force a reflow so the scale-up transition actually runs
+    void seed.offsetWidth; // force a reflow so the scale-up transition actually runs
     // swell past the flyer size so the text-to-orb morph reads clearly before the split
     seed.style.transform = `translate(${src.x}px, ${src.y}px) translate(-50%, -50%) scale(1.25)`;
 

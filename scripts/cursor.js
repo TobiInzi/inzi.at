@@ -5,20 +5,13 @@
 // Everything reads the live --accent through CSS, so it recolours with the selected
 // type. Pointer-events off; skipped under reduced motion / touch.
 
+import { easeOut, hexToRgbStr } from "./util.js";
+
 // Anything that should make the ring contract (i.e. reads as interactive).
 const CLICKABLE = "a, button, [role=button], input, label, select, summary, .type, .igniter";
 
-const easeOut = (t) => 1 - (1 - t) ** 3;
 const TAU = Math.PI * 2;
 const RING_R = 19; // ring radius at scale 1 (matches the 38px .cursor-ring)
-
-// "#009e59" -> "0, 158, 89" (for the click effect's rgba strings); null if unparsable.
-function hexToRgbStr(hex) {
-  const v = (hex || "").replace("#", "").trim();
-  if (v.length < 6) return null;
-  const n = parseInt(v.slice(0, 6), 16);
-  return Number.isNaN(n) ? null : `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
-}
 
 // Click choreography timing (seconds).
 const IMPLODE_DUR = 0.4; // ring collapsing inward to the point
@@ -61,7 +54,17 @@ export function initCursor(reducedMotion = false) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   resize();
-  window.addEventListener("resize", resize);
+  // Coalesce resize bursts to one canvas reallocation per frame (matches the
+  // page-level handler in main.js) so a drag doesn't thrash the canvas.
+  let resizeQueued = false;
+  window.addEventListener("resize", () => {
+    if (resizeQueued) return;
+    resizeQueued = true;
+    requestAnimationFrame(() => {
+      resizeQueued = false;
+      resize();
+    });
+  });
 
   let accent = [231, 231, 231];
   let lastAccent = -1;
